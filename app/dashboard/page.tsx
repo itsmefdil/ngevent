@@ -115,6 +115,44 @@ export default function DashboardPage() {
         }
     };
 
+    const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
+        if (!confirm(`Apakah Anda yakin ingin menghapus event "${eventTitle}"? Tindakan ini tidak dapat dibatalkan.`)) {
+            return;
+        }
+
+        try {
+            // Delete registrations first (foreign key constraint)
+            const { error: regError } = await supabase
+                .from('registrations')
+                .delete()
+                .eq('event_id', eventId);
+
+            if (regError) throw regError;
+
+            // Delete the event
+            const { error: eventError } = await supabase
+                .from('events')
+                .delete()
+                .eq('id', eventId)
+                .eq('organizer_id', user.id); // Ensure only organizer can delete their own event
+
+            if (eventError) throw eventError;
+
+            // Remove custom images from localStorage
+            localStorage.removeItem(`event_custom_images_${eventId}`);
+
+            toast.success('Event berhasil dihapus!');
+
+            // Reload events
+            if (user) {
+                loadMyEvents(user.id);
+            }
+        } catch (error: any) {
+            console.error('Error deleting event:', error);
+            toast.error(error.message || 'Gagal menghapus event');
+        }
+    };
+
     if (loading || !authChecked) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-primary">
@@ -335,23 +373,29 @@ export default function DashboardPage() {
                                                     {/* Action Buttons */}
                                                     <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                                                         <Link
-                                                            href={`/dashboard/events/${event.id}/edit`}
-                                                            className="flex-1 sm:flex-none px-4 py-2 bg-gray-100 dark:bg-dark-secondary text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-center font-medium"
-                                                        >
-                                                            ✏️ Edit
-                                                        </Link>
-                                                        <Link
                                                             href={`/events/${event.id}`}
-                                                            className="flex-1 sm:flex-none px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-center font-medium"
+                                                            className="flex-1 px-3 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors text-center font-medium"
                                                         >
                                                             View
                                                         </Link>
                                                         <Link
-                                                            href={`/dashboard/events/${event.id}/registrations`}
-                                                            className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+                                                            href={`/dashboard/events/${event.id}/edit`}
+                                                            className="flex-1 px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors text-center font-medium"
                                                         >
-                                                            Data Registrations
+                                                            Edit
                                                         </Link>
+                                                        <Link
+                                                            href={`/dashboard/events/${event.id}/registrations`}
+                                                            className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+                                                        >
+                                                            Data
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => handleDeleteEvent(event.id, event.title)}
+                                                            className="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors text-center font-medium"
+                                                        >
+                                                            Delete
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>

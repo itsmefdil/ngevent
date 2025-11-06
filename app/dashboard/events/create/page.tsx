@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import CustomImagesUpload from '@/components/CustomImagesUpload';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -30,12 +31,42 @@ export default function CreateEventPage() {
 
     const [formFields, setFormFields] = useState<any[]>([]);
     const [speakers, setSpeakers] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'basic' | 'registration' | 'speakers'>('basic');
+    const [customImages, setCustomImages] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<'basic' | 'registration' | 'speakers' | 'images'>('basic');
 
     useEffect(() => {
         checkAuth();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Auto-generate payment proof field when registration fee is set
+    useEffect(() => {
+        const hasFee = formData.registration_fee && parseFloat(formData.registration_fee) > 0;
+        const hasPaymentProofField = formFields.some(field =>
+            field.field_name.toLowerCase().includes('bukti pembayaran') ||
+            field.field_name.toLowerCase().includes('payment proof')
+        );
+
+        if (hasFee && !hasPaymentProofField) {
+            // Add payment proof upload field automatically
+            setFormFields(prev => [
+                ...prev,
+                {
+                    field_name: 'Bukti Pembayaran',
+                    field_type: 'file',
+                    is_required: true,
+                    options: null,
+                },
+            ]);
+            toast.success('Form upload bukti pembayaran ditambahkan otomatis');
+        } else if (!hasFee && hasPaymentProofField) {
+            // Remove payment proof field if fee is removed
+            setFormFields(prev => prev.filter(field =>
+                !field.field_name.toLowerCase().includes('bukti pembayaran') &&
+                !field.field_name.toLowerCase().includes('payment proof')
+            ));
+        }
+    }, [formData.registration_fee]);
 
     const checkAuth = async () => {
         try {
@@ -127,6 +158,22 @@ export default function CreateEventPage() {
                 .single();
 
             if (eventError) throw eventError;
+
+            // Store custom images in event metadata (we'll use the description or create a separate storage)
+            // For now, we'll store them in localStorage as event_custom_images_{event_id}
+            // In production, you should create a separate table or JSONB column
+            if (customImages.length > 0) {
+                const imagesData = customImages.map(img => ({
+                    title: img.title,
+                    description: img.description,
+                    url: img.url
+                }));
+
+                // Store in localStorage for demo (replace with database storage in production)
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(`event_custom_images_${event.id}`, JSON.stringify(imagesData));
+                }
+            }
 
             // Insert form fields
             if (formFields.length > 0) {
@@ -292,7 +339,21 @@ export default function CreateEventPage() {
                                     Registration Form
                                 </div>
                             </button>
-
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('images')}
+                                className={`pb-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${activeTab === 'images'
+                                    ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Custom Images
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -745,6 +806,16 @@ export default function CreateEventPage() {
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Custom Images Tab */}
+                        {activeTab === 'images' && (
+                            <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                                <CustomImagesUpload
+                                    images={customImages}
+                                    onChange={setCustomImages}
+                                />
                             </div>
                         )}
 

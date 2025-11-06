@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import CustomImagesUpload from '@/components/CustomImagesUpload';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { Database } from '@/lib/database.types';
@@ -38,7 +39,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     const [deletedFieldIds, setDeletedFieldIds] = useState<string[]>([]);
     const [speakers, setSpeakers] = useState<any[]>([]);
     const [deletedSpeakerIds, setDeletedSpeakerIds] = useState<string[]>([]);
-    const [activeTab, setActiveTab] = useState<'basic' | 'registration' | 'speakers'>('basic');
+    const [customImages, setCustomImages] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<'basic' | 'registration' | 'speakers' | 'images'>('basic');
 
     useEffect(() => {
         params.then((resolvedParams) => {
@@ -52,6 +54,47 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventId]);
+
+    // Auto-generate payment proof field when registration fee is set
+    useEffect(() => {
+        if (!loadingData) { // Only run after initial data is loaded
+            const hasFee = formData.registration_fee && parseFloat(formData.registration_fee) > 0;
+            const hasPaymentProofField = formFields.some(field =>
+                field.field_name.toLowerCase().includes('bukti pembayaran') ||
+                field.field_name.toLowerCase().includes('payment proof')
+            );
+
+            if (hasFee && !hasPaymentProofField) {
+                // Add payment proof upload field automatically
+                setFormFields(prev => [
+                    ...prev,
+                    {
+                        field_name: 'Bukti Pembayaran',
+                        field_type: 'file',
+                        is_required: true,
+                        options: null,
+                    },
+                ]);
+                toast.success('Form upload bukti pembayaran ditambahkan otomatis');
+            } else if (!hasFee && hasPaymentProofField) {
+                // Remove payment proof field if fee is removed
+                const paymentProofField = formFields.find(field =>
+                    field.field_name.toLowerCase().includes('bukti pembayaran') ||
+                    field.field_name.toLowerCase().includes('payment proof')
+                );
+
+                // If field has ID, mark for deletion
+                if (paymentProofField?.id) {
+                    setDeletedFieldIds(prev => [...prev, paymentProofField.id]);
+                }
+
+                setFormFields(prev => prev.filter(field =>
+                    !field.field_name.toLowerCase().includes('bukti pembayaran') &&
+                    !field.field_name.toLowerCase().includes('payment proof')
+                ));
+            }
+        }
+    }, [formData.registration_fee, loadingData]);
 
     const checkAuth = async () => {
         try {
@@ -131,6 +174,14 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             if (speakersError) throw speakersError;
 
             setSpeakers(speakersData || []);
+
+            // Load custom images from localStorage (in production, load from database)
+            if (typeof window !== 'undefined') {
+                const storedImages = localStorage.getItem(`event_custom_images_${eventId}`);
+                if (storedImages) {
+                    setCustomImages(JSON.parse(storedImages));
+                }
+            }
         } catch (error: any) {
             console.error('Error loading event:', error);
             toast.error('Gagal memuat data event');
@@ -198,131 +249,195 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 }
             }
 
-            // Update event
-            const { error: eventError } = await supabase
-                .from('events')
-                .update({
-                    title: formData.title,
-                    description: formData.description,
-                    start_date: formData.start_date,
-                    end_date: formData.end_date,
-                    location: formData.location,
-                    category: formData.category,
-                    capacity: formData.capacity ? parseInt(formData.capacity) : null,
-                    registration_fee: formData.registration_fee ? parseFloat(formData.registration_fee) : 0,
-                    status: formData.status,
-                    image_url: imageUrl,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', eventId);
+            // Debug: Log description before update
+            console.log('Updating event with description:', formData.description);
+            console.log('Description length:', formData.description?.length || 0);
 
-            if (eventError) throw eventError;
+            // Update event
+            const updateData = {
+                title: formData.title,
+                description: formData.description,
+                start_date: formData.start_date,
+                end_date: formData.end_date,
+                location: formData.location,
+                category: formData.category,
+                capacity: formData.capacity ? parseInt(formData.capacity) : null,
+                registration_fee: formData.registration_fee ? parseFloat(formData.registration_fee) : 0,
+                status: formData.status,
+                image_url: imageUrl,
+                updated_at: new Date().toISOString(),
+            };
+
+            console.log('Update data:', updateData);
+
+            const { data: updatedData, error: eventError } = await supabase
+                .from('events')
+                .update(updateData)
+                .eq('id', eventId)
+                .select();
+
+            console.log('Updated data from DB:', updatedData);
+
+            if (eventError) {
+                console.error('Event update error:', eventError);
+                throw eventError;
+            }
+
+            console.log('Event updated successfully, now updating form fields...');
 
             // Delete removed fields
             if (deletedFieldIds.length > 0) {
+                console.log('Deleting form fields:', deletedFieldIds);
                 const { error: deleteError } = await supabase
                     .from('form_fields')
                     .delete()
                     .in('id', deletedFieldIds);
 
-                if (deleteError) throw deleteError;
-            }
-
-            // Update/Insert form fields
-            for (let i = 0; i < formFields.length; i++) {
-                const field = formFields[i];
-
-                if (field.id) {
-                    // Update existing field
-                    const { error: updateError } = await supabase
-                        .from('form_fields')
-                        .update({
-                            field_name: field.field_name,
-                            field_type: field.field_type,
-                            is_required: field.is_required,
-                            options: field.options,
-                            order_index: i,
-                        })
-                        .eq('id', field.id);
-
-                    if (updateError) throw updateError;
-                } else {
-                    // Insert new field
-                    const { error: insertError } = await supabase
-                        .from('form_fields')
-                        .insert({
-                            event_id: eventId,
-                            field_name: field.field_name,
-                            field_type: field.field_type,
-                            is_required: field.is_required,
-                            options: field.options,
-                            order_index: i,
-                        });
-
-                    if (insertError) throw insertError;
+                if (deleteError) {
+                    console.error('Delete fields error:', deleteError);
+                    throw deleteError;
                 }
             }
 
+            // Update/Insert form fields in parallel
+            console.log('Processing form fields:', formFields.length);
+
+            if (formFields.length > 0) {
+                const fieldPromises = formFields.map((field, i) => {
+                    if (field.id) {
+                        // Update existing field
+                        return supabase
+                            .from('form_fields')
+                            .update({
+                                field_name: field.field_name,
+                                field_type: field.field_type,
+                                is_required: field.is_required,
+                                options: field.options,
+                                order_index: i,
+                            })
+                            .eq('id', field.id);
+                    } else {
+                        // Insert new field
+                        return supabase
+                            .from('form_fields')
+                            .insert({
+                                event_id: eventId,
+                                field_name: field.field_name,
+                                field_type: field.field_type,
+                                is_required: field.is_required,
+                                options: field.options,
+                                order_index: i,
+                            });
+                    }
+                });
+
+                const fieldResults = await Promise.all(fieldPromises);
+                console.log('Form fields results:', fieldResults);
+                const fieldErrors = fieldResults.filter(result => result.error);
+                if (fieldErrors.length > 0) {
+                    console.error('Form field errors:', fieldErrors);
+                    throw new Error('Gagal menyimpan form fields');
+                }
+            } else {
+                console.log('No form fields to update');
+            }
+
+            console.log('Form fields updated successfully, now updating speakers...');
+
             // Delete removed speakers
             if (deletedSpeakerIds.length > 0) {
+                console.log('Deleting speakers:', deletedSpeakerIds);
                 const { error: deleteError } = await supabase
                     .from('speakers')
                     .delete()
                     .in('id', deletedSpeakerIds);
 
-                if (deleteError) throw deleteError;
-            }
-
-            // Update/Insert speakers
-            for (let i = 0; i < speakers.length; i++) {
-                const speaker = speakers[i];
-
-                if (speaker.id) {
-                    // Update existing speaker
-                    const { error: updateError } = await supabase
-                        .from('speakers')
-                        .update({
-                            name: speaker.name,
-                            title: speaker.title,
-                            company: speaker.company,
-                            bio: speaker.bio,
-                            photo_url: speaker.photo_url,
-                            linkedin_url: speaker.linkedin_url,
-                            twitter_url: speaker.twitter_url,
-                            website_url: speaker.website_url,
-                            order_index: i,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq('id', speaker.id);
-
-                    if (updateError) throw updateError;
-                } else {
-                    // Insert new speaker
-                    const { error: insertError } = await supabase
-                        .from('speakers')
-                        .insert({
-                            event_id: eventId,
-                            name: speaker.name,
-                            title: speaker.title,
-                            company: speaker.company,
-                            bio: speaker.bio,
-                            photo_url: speaker.photo_url,
-                            linkedin_url: speaker.linkedin_url,
-                            twitter_url: speaker.twitter_url,
-                            website_url: speaker.website_url,
-                            order_index: i,
-                        });
-
-                    if (insertError) throw insertError;
+                if (deleteError) {
+                    console.error('Delete speakers error:', deleteError);
+                    throw deleteError;
                 }
             }
 
+            // Update/Insert speakers in parallel
+            console.log('Processing speakers:', speakers.length);
+
+            if (speakers.length > 0) {
+                const speakerPromises = speakers.map((speaker, i) => {
+                    if (speaker.id) {
+                        // Update existing speaker
+                        return supabase
+                            .from('speakers')
+                            .update({
+                                name: speaker.name,
+                                title: speaker.title,
+                                company: speaker.company,
+                                bio: speaker.bio,
+                                photo_url: speaker.photo_url,
+                                linkedin_url: speaker.linkedin_url,
+                                twitter_url: speaker.twitter_url,
+                                website_url: speaker.website_url,
+                                order_index: i,
+                                updated_at: new Date().toISOString(),
+                            })
+                            .eq('id', speaker.id);
+                    } else {
+                        // Insert new speaker
+                        return supabase
+                            .from('speakers')
+                            .insert({
+                                event_id: eventId,
+                                name: speaker.name,
+                                title: speaker.title,
+                                company: speaker.company,
+                                bio: speaker.bio,
+                                photo_url: speaker.photo_url,
+                                linkedin_url: speaker.linkedin_url,
+                                twitter_url: speaker.twitter_url,
+                                website_url: speaker.website_url,
+                                order_index: i,
+                            });
+                    }
+                });
+
+                const speakerResults = await Promise.all(speakerPromises);
+                console.log('Speakers results:', speakerResults);
+                const speakerErrors = speakerResults.filter(result => result.error);
+                if (speakerErrors.length > 0) {
+                    console.error('Speaker errors:', speakerErrors);
+                    throw new Error('Gagal menyimpan speakers');
+                }
+            } else {
+                console.log('No speakers to update');
+            }
+
+            console.log('Speakers updated successfully, now saving custom images...');
+
+            // Save custom images to localStorage (in production, save to database)
+            if (customImages.length > 0) {
+                const imagesData = customImages.map(img => ({
+                    title: img.title,
+                    description: img.description,
+                    url: img.url
+                }));
+
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(`event_custom_images_${eventId}`, JSON.stringify(imagesData));
+                }
+            } else {
+                // Remove if no images
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem(`event_custom_images_${eventId}`);
+                }
+            }
+
+            console.log('All updates completed successfully!');
             toast.success('Event berhasil diupdate!');
             router.push('/dashboard');
         } catch (error: any) {
             console.error('Error updating event:', error);
             toast.error(error.message || 'Gagal mengupdate event');
         } finally {
+            console.log('Setting loading to false');
             setLoading(false);
         }
     };
@@ -462,6 +577,21 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                     Registration Form
                                 </div>
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('images')}
+                                className={`pb-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${activeTab === 'images'
+                                    ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Custom Images
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -542,7 +672,10 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                         </label>
                                         <MarkdownEditor
                                             value={formData.description}
-                                            onChange={(value) => setFormData({ ...formData, description: value })}
+                                            onChange={(value) => {
+                                                console.log('MarkdownEditor onChange called with:', value);
+                                                setFormData((prev) => ({ ...prev, description: value }));
+                                            }}
                                             placeholder="Describe your event using markdown..."
                                             height="300px"
                                         />
@@ -917,6 +1050,16 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Custom Images Tab */}
+                        {activeTab === 'images' && (
+                            <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                                <CustomImagesUpload
+                                    images={customImages}
+                                    onChange={setCustomImages}
+                                />
                             </div>
                         )}
 

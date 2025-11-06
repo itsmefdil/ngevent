@@ -30,6 +30,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     const [filePreview, setFilePreview] = useState<Record<string, string>>({});
     const [profile, setProfile] = useState<any>(null);
     const [isProfileComplete, setIsProfileComplete] = useState(false);
+    const [organizer, setOrganizer] = useState<any>(null);
+    const [customImages, setCustomImages] = useState<any[]>([]);
 
     useEffect(() => {
         params.then((resolvedParams) => {
@@ -101,6 +103,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
             setEvent(eventData);
 
+            // Load organizer profile
+            if (eventData.organizer_id) {
+                const { data: organizerData } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', eventData.organizer_id)
+                    .single();
+
+                setOrganizer(organizerData);
+            }
+
             // Load form fields
             const { data: fieldsData } = await supabase
                 .from('form_fields')
@@ -118,6 +131,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 .order('order_index', { ascending: true });
 
             setSpeakers(speakersData || []);
+
+            // Load custom images from localStorage (temporary storage)
+            if (typeof window !== 'undefined') {
+                const storedImages = localStorage.getItem(`event_custom_images_${eventId}`);
+                if (storedImages) {
+                    try {
+                        setCustomImages(JSON.parse(storedImages));
+                    } catch (error) {
+                        console.error('Error parsing custom images:', error);
+                    }
+                }
+            }
         } catch (error: any) {
             console.error('Error loading event:', error?.message || error);
             toast.error(t('event.notFound') || 'Event tidak ditemukan');
@@ -242,31 +267,111 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                    {/* Left Column - Event Details */}
-                    <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-                        {/* Event Image - Mobile Only (atas) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+                    {/* Left Column - Image, Speakers, Organizer, Custom Images */}
+                    <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+                        {/* Event Image */}
                         {event.image_url && (
-                            <div className="block lg:hidden w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-lg">
+                            <div className="w-full rounded-xl overflow-hidden shadow-lg">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={event.image_url}
                                     alt={event.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-auto object-cover"
                                 />
                             </div>
                         )}
 
-                        {/* Event Title & Description */}
+                        {/* Organizer/Host Section */}
+                        {organizer && (
+                            <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-5 border border-transparent dark:border-gray-700">
+                                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">
+                                    {language === 'id' ? 'Penyelenggara' : 'Organizer'}
+                                </h3>
+                                <div className="flex items-start gap-3">
+                                    {organizer.avatar_url ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={organizer.avatar_url}
+                                            alt={organizer.full_name || organizer.email}
+                                            className="w-12 h-12 rounded-full object-cover flex-shrink-0 ring-2 ring-primary-200 dark:ring-primary-800"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-purple-600 dark:from-primary-500 dark:to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ring-2 ring-primary-200 dark:ring-primary-800">
+                                            {(organizer.full_name || organizer.email || 'O').charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+                                            {organizer.full_name || 'Event Organizer'}
+                                        </h4>
+                                        {organizer.city && (
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                {organizer.city}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Speakers Section */}
+                        {speakers.length > 0 && (
+                            <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-5 border border-transparent dark:border-gray-700">
+                                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">
+                                    {t('event.speakers')}
+                                </h3>
+                                <div className="space-y-3">
+                                    {speakers.map((speaker) => (
+                                        <div key={speaker.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-secondary rounded-lg">
+                                            {speaker.photo_url ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={speaker.photo_url}
+                                                    alt={speaker.name}
+                                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                                    {speaker.name.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-1">
+                                                    {speaker.name}
+                                                </h4>
+                                                {speaker.title && (
+                                                    <p className="text-xs text-primary-600 dark:text-primary-400 line-clamp-1">
+                                                        {speaker.title}
+                                                    </p>
+                                                )}
+                                                {speaker.company && (
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
+                                                        {speaker.company}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+
+                    </div>
+
+                    {/* Center Column - Title, Info, Description */}
+                    <div className="lg:col-span-6 space-y-4 sm:space-y-6">
+                        {/* Event Title */}
                         <div>
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 leading-tight">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 leading-tight">
                                 {event.title}
                             </h1>
                         </div>
 
                         {/* Event Meta Info Card */}
-                        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl shadow-md dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
+                            <div className="space-y-4">
                                 {/* Date & Time */}
                                 <div className="flex items-start gap-3 sm:gap-4">
                                     <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 dark:bg-dark-secondary rounded-lg flex items-center justify-center">
@@ -276,7 +381,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                            {format(new Date(event.start_date), 'EEEE, MMMM d', { locale: language === 'id' ? id : enUS })}
+                                            {format(new Date(event.start_date), 'EEEE, MMMM d, yyyy', { locale: language === 'id' ? id : enUS })}
                                         </div>
                                         <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
                                             {format(new Date(event.start_date), 'h:mm a', { locale: language === 'id' ? id : enUS })} - {format(new Date(event.end_date), 'h:mm a', { locale: language === 'id' ? id : enUS })}
@@ -299,15 +404,28 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Capacity */}
+                                {event.capacity && (
+                                    <div className="flex items-start gap-3 sm:gap-4">
+                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 dark:bg-dark-secondary rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1">{t('event.capacity')}</div>
+                                            <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{event.capacity} {language === 'id' ? 'peserta' : 'participants'}</div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* About the Event Section */}
-                        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl shadow-md dark:shadow-xl p-4 sm:p-6 lg:p-8 border border-transparent dark:border-gray-700">
+                        <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
                             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">{t('event.aboutEvent')}</h2>
-
-
-                            <div className="prose prose-sm sm:prose-base lg:prose-lg dark:prose-invert max-w-none">
+                            <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
                                 <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                                     {event.description}
                                 </p>
@@ -323,109 +441,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                 </div>
                             )}
                         </div>
-
-                        {/* Speakers Section */}
-                        {speakers.length > 0 && (
-                            <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl shadow-md dark:shadow-xl p-4 sm:p-6 lg:p-8 border border-transparent dark:border-gray-700">
-                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">{t('event.speakers')}</h2>
-                                <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                                    {speakers.map((speaker) => (
-                                        <div key={speaker.id} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-dark-secondary rounded-lg sm:rounded-xl">
-                                            {speaker.photo_url ? (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img
-                                                    src={speaker.photo_url}
-                                                    alt={speaker.name}
-                                                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0"
-                                                />
-                                            ) : (
-                                                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-lg sm:text-xl flex-shrink-0">
-                                                    {speaker.name.charAt(0).toUpperCase()}
-                                                </div>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg mb-1">
-                                                    {speaker.name}
-                                                </h3>
-                                                {speaker.title && (
-                                                    <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">
-                                                        {speaker.title}
-                                                    </p>
-                                                )}
-                                                {speaker.company && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {speaker.company}
-                                                    </p>
-                                                )}
-                                                {speaker.bio && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
-                                                        {speaker.bio}
-                                                    </p>
-                                                )}
-                                                {/* Social Links */}
-                                                {(speaker.linkedin_url || speaker.twitter_url || speaker.website_url) && (
-                                                    <div className="flex gap-3 mt-3">
-                                                        {speaker.linkedin_url && (
-                                                            <a
-                                                                href={speaker.linkedin_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                                            >
-                                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                                                                </svg>
-                                                            </a>
-                                                        )}
-                                                        {speaker.twitter_url && (
-                                                            <a
-                                                                href={speaker.twitter_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                                            >
-                                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                                    <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
-                                                                </svg>
-                                                            </a>
-                                                        )}
-                                                        {speaker.website_url && (
-                                                            <a
-                                                                href={speaker.website_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                                            >
-                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                                                </svg>
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Right Column - Registration Card */}
-                    <div className="lg:col-span-1">
-                        {/* Poster  */}
+                    {/* Right Column - Registration Form */}
+                    <div className="lg:col-span-3">
                         <div className="lg:sticky lg:top-24">
-                            {/* Event Image - Desktop Only (sidebar) */}
-                            {event.image_url && (
-                                <div className="hidden lg:block rounded-lg sm:rounded-xl overflow-hidden mb-4 sm:mb-6 shadow-lg">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={event.image_url}
-                                        alt={event.title}
-                                        className="w-full h-auto object-cover"
-                                    />
-                                </div>
-                            )}
                             {!isRegistered ? (
                                 <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl shadow-lg dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
                                     {/* Registration Header */}
@@ -450,6 +470,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
 
                                     </div>
+
+
 
                                     {/* Registration Form */}
                                     {user ? (
@@ -587,7 +609,38 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                                                         />
                                                                     </label>
                                                                 )}
+
+                                                                <br />
+                                                                {/* Custom Images Section */}
+                                                                {customImages.length > 0 && (
+
+                                                                    <div className="space-y-3">
+                                                                        {customImages.map((image, index) => (
+                                                                            <div key={index} className="group">
+                                                                                <div className="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-dark-secondary mb-2">
+                                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                                    <img
+                                                                                        src={image.url}
+                                                                                        alt={image.title}
+                                                                                        className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                                                    />
+                                                                                </div>
+                                                                                <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-1">
+                                                                                    {image.title}
+                                                                                </h4>
+                                                                                {image.description && (
+                                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                                                        {image.description}
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+
                                                             </div>
+
+
                                                         ) : (
                                                             <input
                                                                 type={field.field_type}
