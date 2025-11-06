@@ -47,7 +47,42 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventId]);
 
-    const checkAuth = async () => {
+    // Realtime subscription to detect registration changes
+    useEffect(() => {
+        if (!eventId || !user) return;
+
+        // Setup realtime subscription for registrations
+        const channel = supabase
+            .channel('registration-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+                    schema: 'public',
+                    table: 'registrations',
+                    filter: `event_id=eq.${eventId}`,
+                },
+                (payload) => {
+                    console.log('Registration change detected:', payload);
+
+                    // If current user's registration is affected
+                    const oldRecord = payload.old as any;
+                    const newRecord = payload.new as any;
+
+                    if (oldRecord?.user_id === user.id || newRecord?.user_id === user.id) {
+                        // Re-check registration status
+                        console.log('User registration changed, rechecking status...');
+                        checkRegistration(user.id);
+                    }
+                }
+            )
+            .subscribe();
+
+        // Cleanup subscription on unmount
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [eventId, user]); const checkAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
 
@@ -159,7 +194,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
     const handleFileUpload = async (fieldName: string, file: File): Promise<string | null> => {
         try {
-            setUploadingFiles({ ...uploadingFiles, [fieldName]: true });
+            setUploadingFiles(prev => ({ ...prev, [fieldName]: true }));
 
             const fileExt = file.name.split('.').pop();
             const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -176,12 +211,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 .from('events')
                 .getPublicUrl(filePath);
 
-            setUploadingFiles({ ...uploadingFiles, [fieldName]: false });
+            setUploadingFiles(prev => ({ ...prev, [fieldName]: false }));
             return data.publicUrl;
         } catch (error: any) {
             console.error('Error uploading file:', error);
             toast.error('Gagal upload file');
-            setUploadingFiles({ ...uploadingFiles, [fieldName]: false });
+            setUploadingFiles(prev => ({ ...prev, [fieldName]: false }));
             return null;
         }
     };
@@ -193,7 +228,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    setFilePreview({ ...filePreview, [fieldName]: reader.result as string });
+                    setFilePreview(prev => ({ ...prev, [fieldName]: reader.result as string }));
                 };
                 reader.readAsDataURL(file);
             }
@@ -201,8 +236,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             // Upload file
             const uploadedUrl = await handleFileUpload(fieldName, file);
             if (uploadedUrl) {
-                setFormData({ ...formData, [fieldName]: uploadedUrl });
-                toast.success(t('event.fileUploadSuccess'));
+                console.log('File uploaded successfully:', fieldName, uploadedUrl);
+                setFormData(prev => ({ ...prev, [fieldName]: uploadedUrl }));
+                toast.success(t('event.fileUploadSuccess') || 'File berhasil diupload');
             }
         }
     };
@@ -216,19 +252,27 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         }
 
         try {
-            const { error } = await supabase.from('registrations').insert({
-                event_id: eventId,
-                user_id: user.id,
-                registration_data: formData,
-                status: 'registered',
-            });
+            console.log('Submitting registration with data:', formData);
+
+            const { data: insertedData, error } = await supabase
+                .from('registrations')
+                .insert({
+                    event_id: eventId,
+                    user_id: user.id,
+                    registration_data: formData,
+                    status: 'registered',
+                })
+                .select();
+
+            console.log('Registration result:', insertedData);
 
             if (error) throw error;
 
-            toast.success(t('event.registrationSuccessToast'));
+            toast.success(t('event.registrationSuccessToast') || 'Berhasil mendaftar event!');
             setIsRegistered(true);
         } catch (error: any) {
-            toast.error(error.message || t('event.registrationError'));
+            console.error('Registration error:', error);
+            toast.error(error.message || t('event.registrationError') || 'Gagal mendaftar event');
         }
     };
 
