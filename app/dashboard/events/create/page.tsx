@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import MarkdownEditor from '@/components/MarkdownEditor';
+import QuillEditor from '@/components/QuillEditor';
 import CustomImagesUpload from '@/components/CustomImagesUpload';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -133,8 +133,18 @@ export default function CreateEventPage() {
         setLoading(true);
 
         try {
+            console.log('Starting event creation...');
+            console.log('Form data:', formData);
+
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('User not authenticated');
+
+            // Validate required fields
+            if (!formData.title || !formData.description || !formData.start_date || !formData.end_date) {
+                toast.error('Mohon lengkapi semua field yang wajib diisi');
+                setLoading(false);
+                return;
+            }
 
             // Upload image first if exists
             let imageUrl = formData.image_url;
@@ -145,6 +155,7 @@ export default function CreateEventPage() {
                 }
             }
 
+            console.log('Inserting event to database...');
             const { data: event, error: eventError } = await supabase
                 .from('events')
                 .insert({
@@ -157,7 +168,12 @@ export default function CreateEventPage() {
                 .select()
                 .single();
 
-            if (eventError) throw eventError;
+            if (eventError) {
+                console.error('Event creation error:', eventError);
+                throw eventError;
+            }
+
+            console.log('Event created:', event);
 
             // Store custom images in event metadata (we'll use the description or create a separate storage)
             // For now, we'll store them in localStorage as event_custom_images_{event_id}
@@ -218,6 +234,7 @@ export default function CreateEventPage() {
             toast.success('Event berhasil dibuat!');
             router.push('/dashboard');
         } catch (error: any) {
+            console.error('Error creating event:', error);
             toast.error(error.message || 'Gagal membuat event');
         } finally {
             setLoading(false);
@@ -431,10 +448,13 @@ export default function CreateEventPage() {
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Description <span className="text-red-500">*</span>
                                         </label>
-                                        <MarkdownEditor
+                                        <QuillEditor
                                             value={formData.description}
-                                            onChange={(value) => setFormData({ ...formData, description: value })}
-                                            placeholder="Describe your event using markdown..."
+                                            onChange={(value: string) => {
+                                                console.log('QuillEditor onChange called with:', value);
+                                                setFormData((prev) => ({ ...prev, description: value }));
+                                            }}
+                                            placeholder="Describe your event..."
                                             height="300px"
                                         />
                                     </div>

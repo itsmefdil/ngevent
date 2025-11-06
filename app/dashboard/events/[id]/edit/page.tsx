@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import MarkdownEditor from '@/components/MarkdownEditor';
+import QuillEditor from '@/components/QuillEditor';
 import CustomImagesUpload from '@/components/CustomImagesUpload';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -670,13 +670,13 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Description <span className="text-red-500">*</span>
                                         </label>
-                                        <MarkdownEditor
+                                        <QuillEditor
                                             value={formData.description}
-                                            onChange={(value) => {
-                                                console.log('MarkdownEditor onChange called with:', value);
+                                            onChange={(value: string) => {
+                                                console.log('QuillEditor onChange called with:', value);
                                                 setFormData((prev) => ({ ...prev, description: value }));
                                             }}
-                                            placeholder="Describe your event using markdown..."
+                                            placeholder="Describe your event..."
                                             height="300px"
                                         />
                                     </div>

@@ -469,11 +469,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         {/* About the Event Section */}
                         <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
                             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">{t('event.aboutEvent')}</h2>
-                            <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
-                                <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                                    {event.description}
-                                </p>
-                            </div>
+                            <div
+                                className="prose prose-sm sm:prose-base dark:prose-invert max-w-none ql-editor-content"
+                                dangerouslySetInnerHTML={{ __html: event.description || '' }}
+                            />
 
                             {/* Category Tag */}
                             {event.category && (

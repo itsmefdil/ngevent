@@ -101,4 +101,101 @@
   .bg-blob-red {
     background-color: rgba(239, 68, 68, 0.1);
   }
+
+  /* Quill Editor Content Styling */
+  .ql-editor-content {
+    font-size: 14px;
+    line-height: 1.75;
+  }
+  
+  .ql-editor-content p {
+    margin-bottom: 1em;
+  }
+  
+  .ql-editor-content h1,
+  .ql-editor-content h2,
+  .ql-editor-content h3,
+  .ql-editor-content h4,
+  .ql-editor-content h5,
+  .ql-editor-content h6 {
+    font-weight: bold;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  
+  .ql-editor-content h1 { font-size: 2em; }
+  .ql-editor-content h2 { font-size: 1.5em; }
+  .ql-editor-content h3 { font-size: 1.25em; }
+  .ql-editor-content h4 { font-size: 1.1em; }
+  
+  .ql-editor-content ul,
+  .ql-editor-content ol {
+    padding-left: 1.5em;
+    margin-bottom: 1em;
+  }
+  
+  .ql-editor-content li {
+    margin-bottom: 0.5em;
+  }
+  
+  .ql-editor-content blockquote {
+    border-left: 4px solid #22c55e;
+    padding-left: 1em;
+    margin: 1em 0;
+    font-style: italic;
+    color: #6b7280;
+  }
+  
+  .dark .ql-editor-content blockquote {
+    border-left-color: #16a34a;
+    color: #9ca3af;
+  }
+  
+  .ql-editor-content pre {
+    background-color: #f3f4f6;
+    padding: 1em;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1em 0;
+  }
+  
+  .dark .ql-editor-content pre {
+    background-color: #1f2937;
+  }
+  
+  .ql-editor-content code {
+    background-color: #f3f4f6;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+  
+  .dark .ql-editor-content code {
+    background-color: #1f2937;
+  }
+  
+  .ql-editor-content a {
+    color: #22c55e;
+    text-decoration: underline;
+  }
+  
+  .ql-editor-content a:hover {
+    color: #16a34a;
+  }
+  
+  .ql-editor-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1em 0;
+  }
+  
+  .ql-editor-content strong {
+    font-weight: 700;
+  }
+  
+  .ql-editor-content em {
+    font-style: italic;
+  }
 }
