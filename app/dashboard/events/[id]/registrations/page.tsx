@@ -151,24 +151,63 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
         }
 
         try {
-            const { error } = await supabase
+            console.log('Deleting registration:', registrationId);
+
+            // First, verify the registration exists and we have permission
+            const { data: checkData, error: checkError } = await supabase
                 .from('registrations')
-                .delete()
+                .select('id, event_id')
+                .eq('id', registrationId)
+                .single();
+
+            console.log('Check result:', { checkData, checkError });
+
+            if (checkError || !checkData) {
+                console.error('Registration not found or no permission to view');
+                toast.error('Registrasi tidak ditemukan atau Anda tidak memiliki izin untuk menghapusnya.');
+                return;
+            }
+
+            // Verify event ownership
+            if (checkData.event_id !== eventId) {
+                console.error('Registration does not belong to this event');
+                toast.error('Registrasi tidak sesuai dengan event ini.');
+                return;
+            }
+
+            // Now delete
+            const { error, count } = await supabase
+                .from('registrations')
+                .delete({ count: 'exact' })
                 .eq('id', registrationId);
 
-            if (error) throw error;
+            console.log('Delete result:', { error, count });
+
+            if (error) {
+                console.error('Delete error:', error);
+                throw error;
+            }
+
+            // Check if any rows were deleted
+            if (count === 0) {
+                console.warn('No rows were deleted - RLS policy issue');
+                toast.error('Gagal menghapus pendaftaran. RLS policy di Supabase mungkin tidak mengizinkan DELETE. Silakan tambahkan policy: USING (event_id IN (SELECT id FROM events WHERE organizer_id = auth.uid()))');
+                return;
+            }
 
             toast.success('Pendaftaran berhasil dihapus');
 
             // Update local state - remove deleted registration
-            setRegistrations(registrations.filter(reg => reg.id !== registrationId));
+            setRegistrations(prevRegistrations =>
+                prevRegistrations.filter(reg => reg.id !== registrationId)
+            );
+
+            console.log('Registration deleted successfully, count:', count);
         } catch (error: any) {
             console.error('Error deleting registration:', error);
-            toast.error('Gagal menghapus pendaftaran');
+            toast.error(error.message || 'Gagal menghapus pendaftaran');
         }
-    };
-
-    const exportToCSV = () => {
+    }; const exportToCSV = () => {
         const csvData = filteredRegistrations.map(reg => {
             const registrationData = reg.registration_data as Record<string, any> | null;
             const row: Record<string, any> = {
