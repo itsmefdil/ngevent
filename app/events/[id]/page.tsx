@@ -793,7 +793,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                                                             onChange={(e) => handleFileChange(field.field_name, e)}
                                                                             disabled={uploadingFiles[field.field_name]}
                                                                         />
-                                                                        <label 
+                                                                        <label
                                                                             htmlFor={`file-${field.id}`}
                                                                             className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary transition-colors active:bg-gray-200 dark:active:bg-dark-800"
                                                                         >
@@ -868,8 +868,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                                     type="submit"
                                                     disabled={!isProfileComplete || Object.values(uploadingFiles).some(u => u)}
                                                     className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${isProfileComplete && !Object.values(uploadingFiles).some(u => u)
-                                                            ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
-                                                            : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                                        ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
+                                                        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                                                         }`}
                                                 >
                                                     {Object.values(uploadingFiles).some(u => u)
