@@ -6,38 +6,89 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 
 // Debug: Log all environment variable states at module load
-console.log('📝 Environment Variables Check:');
-console.log('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Not set');
-console.log('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✅ Set' : '❌ Not set');
-console.log('RESEND_API_KEY:', resendApiKey ? `✅ Set (${resendApiKey.substring(0, 8)}...)` : '❌ Not set');
-console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level: 'info',
+    message: 'Email webhook module initialization',
+    environment: {
+        supabase_url: supabaseUrl ? 'present' : 'missing',
+        service_role_key: supabaseServiceKey ? 'present' : 'missing',
+        resend_api_key: resendApiKey ? 'present' : 'missing',
+        node_env: process.env.NODE_ENV || 'development'
+    }
+}));
 
 // Validate required environment variables
 if (!supabaseUrl) {
-    console.error('❌ NEXT_PUBLIC_SUPABASE_URL is not set');
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: 'NEXT_PUBLIC_SUPABASE_URL is not set'
+    }));
 }
 if (!supabaseServiceKey) {
-    console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY is not set - email system will not work');
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'warn',
+        message: 'SUPABASE_SERVICE_ROLE_KEY is not set',
+        impact: 'email system will not work',
+        node_env: process.env.NODE_ENV
+    }));
+    
     if (process.env.NODE_ENV === 'production') {
-        console.error('🚨 CRITICAL: Email system disabled in production! Set SUPABASE_SERVICE_ROLE_KEY');
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'error',
+            message: 'CRITICAL: Email system disabled in production',
+            action: 'Set SUPABASE_SERVICE_ROLE_KEY in environment variables'
+        }));
     }
 }
 if (!resendApiKey) {
-    console.warn('⚠️ RESEND_API_KEY is not set - emails will not be sent');
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'warn',
+        message: 'RESEND_API_KEY is not set',
+        impact: 'emails will not be sent',
+        node_env: process.env.NODE_ENV
+    }));
+    
     if (process.env.NODE_ENV === 'production') {
-        console.error('🚨 CRITICAL: Emails disabled in production! Set RESEND_API_KEY in your hosting platform');
-        console.error('💡 Vercel: Project Settings → Environment Variables');
-        console.error('💡 Netlify: Site Settings → Environment Variables');
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'error',
+            message: 'CRITICAL: Emails disabled in production',
+            action: 'Set RESEND_API_KEY in hosting platform environment variables',
+            platforms: {
+                vercel: 'Project Settings → Environment Variables',
+                netlify: 'Site Settings → Environment Variables'
+            }
+        }));
     } else {
-        console.warn('💡 Make sure RESEND_API_KEY is in .env.local and server is restarted');
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'warn',
+            message: 'RESEND_API_KEY not found in .env.local',
+            action: 'Add RESEND_API_KEY to .env.local and restart server'
+        }));
     }
 } else {
     // Verify API key format (should start with 're_')
     if (!resendApiKey.startsWith('re_')) {
-        console.error('❌ RESEND_API_KEY format invalid - should start with "re_"');
-        console.error('Current value starts with:', resendApiKey.substring(0, 3));
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'error',
+            message: 'RESEND_API_KEY format invalid',
+            expected: 'should start with "re_"',
+            actual_prefix: resendApiKey.substring(0, 3)
+        }));
     } else {
-        console.log('✅ RESEND_API_KEY loaded and valid:', resendApiKey.substring(0, 8) + '...');
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'RESEND_API_KEY loaded and valid',
+            key_preview: resendApiKey.substring(0, 8) + '...'
+        }));
     }
 }
 
@@ -66,15 +117,47 @@ interface EmailPayload {
 }
 
 export async function POST(request: NextRequest) {
+    const startTime = Date.now();
+    
     try {
         // Runtime check: Re-read environment variable
         const runtimeResendKey = process.env.RESEND_API_KEY;
-        console.log('🔍 Runtime RESEND_API_KEY check:', runtimeResendKey ? `✅ ${runtimeResendKey.substring(0, 8)}...` : '❌ Not found');
+        
+        // Use structured logging for Vercel
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'Email webhook invoked',
+            runtime_check: {
+                resend_key: runtimeResendKey ? 'present' : 'missing',
+                node_env: process.env.NODE_ENV
+            }
+        }));
 
         const payload: EmailPayload = await request.json();
+        
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'Email request received',
+            email_type: payload.type,
+            recipient: payload.email,
+            user_id: payload.user_id
+        }));
 
         // Validate payload
         if (!payload.type || !payload.email || !payload.user_id) {
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'error',
+                message: 'Invalid payload',
+                missing_fields: {
+                    type: !payload.type,
+                    email: !payload.email,
+                    user_id: !payload.user_id
+                }
+            }));
+            
             return NextResponse.json(
                 { error: 'Missing required fields' },
                 { status: 400 }
@@ -83,7 +166,13 @@ export async function POST(request: NextRequest) {
 
         // Check if email system is configured
         if (!supabaseAdmin) {
-            console.warn('⚠️ Email system not configured - SUPABASE_SERVICE_ROLE_KEY missing');
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'warn',
+                message: 'Email system not configured',
+                reason: 'SUPABASE_SERVICE_ROLE_KEY missing'
+            }));
+            
             return NextResponse.json(
                 {
                     success: true,
@@ -178,7 +267,14 @@ export async function POST(request: NextRequest) {
             });
 
         if (logError) {
-            console.error('Failed to log email:', logError);
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'error',
+                message: 'Failed to log email to database',
+                error: logError.message || logError,
+                email_type: payload.type,
+                recipient: payload.email
+            }));
         }
 
         // Send email using Resend
@@ -194,8 +290,15 @@ export async function POST(request: NextRequest) {
 
         // Check if Resend API key is available
         if (!actualResendKey) {
-            console.warn('⚠️ RESEND_API_KEY not set - skipping email send');
-            console.warn('💡 Add RESEND_API_KEY to .env.local and restart server');
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'warn',
+                message: 'RESEND_API_KEY not configured',
+                action: 'skipping email send',
+                email_type: payload.type,
+                recipient: payload.email
+            }));
+            
             return NextResponse.json({
                 success: true,
                 message: 'Email logged (Resend not configured)',
@@ -206,9 +309,13 @@ export async function POST(request: NextRequest) {
 
         // Verify format before using
         if (!actualResendKey.startsWith('re_')) {
-            console.error('❌ RESEND_API_KEY format invalid!');
-            console.error('Current value:', actualResendKey.substring(0, 10) + '...');
-            console.error('Expected: Should start with "re_"');
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'error',
+                message: 'Invalid Resend API key format',
+                key_prefix: actualResendKey.substring(0, 3),
+                expected: 'Should start with re_'
+            }));
 
             return NextResponse.json({
                 success: false,
@@ -219,7 +326,15 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-            console.log('🔑 Using Resend API key:', actualResendKey.substring(0, 8) + '...');
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'info',
+                message: 'Sending email via Resend',
+                recipient: payload.email,
+                subject: subject,
+                email_type: payload.type,
+                key_length: actualResendKey.length
+            }));
             console.log('🔑 Full key length:', actualResendKey.length, 'characters');
 
             const response = await fetch('https://api.resend.com/emails', {
@@ -240,13 +355,30 @@ export async function POST(request: NextRequest) {
             const resendData = await response.json();
 
             if (!response.ok) {
-                console.error('❌ Resend API error:', resendData);
+                console.log(JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    level: 'error',
+                    message: 'Resend API error',
+                    status: response.status,
+                    error: resendData,
+                    recipient: payload.email
+                }));
+                
                 throw new Error(`Resend API error: ${JSON.stringify(resendData)}`);
             }
 
             emailSent = true;
             resendId = resendData.id;
-            console.log('✅ Email sent successfully via Resend:', resendId);
+            
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'info',
+                message: 'Email sent successfully',
+                resend_id: resendId,
+                recipient: payload.email,
+                email_type: payload.type,
+                duration_ms: Date.now() - startTime
+            }));
 
             // Update email log with Resend ID
             await supabaseAdmin!
@@ -264,7 +396,15 @@ export async function POST(request: NextRequest) {
                 .limit(1);
 
         } catch (emailError: any) {
-            console.error('❌ Failed to send email via Resend:', emailError.message);
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'error',
+                message: 'Failed to send email via Resend',
+                error: emailError.message,
+                stack: emailError.stack,
+                recipient: payload.email,
+                email_type: payload.type
+            }));
 
             // Update log status to failed
             await supabaseAdmin!
@@ -287,7 +427,14 @@ export async function POST(request: NextRequest) {
         });
 
     } catch (error: any) {
-        console.error('Email webhook error:', error);
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'error',
+            message: 'Email webhook error',
+            error: error.message,
+            stack: error.stack,
+            duration_ms: Date.now() - startTime
+        }));
 
         // Log failed email
         try {
@@ -306,7 +453,12 @@ export async function POST(request: NextRequest) {
                     });
             }
         } catch (logError) {
-            console.error('Failed to log error:', logError);
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'error',
+                message: 'Failed to log error to database',
+                error: String(logError)
+            }));
         }
 
         return NextResponse.json(
