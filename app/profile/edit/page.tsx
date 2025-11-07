@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import EditProfileSkeleton from '@/components/EditProfileSkeleton';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -176,14 +177,15 @@ export default function EditProfilePage() {
 
     if (!authChecked) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-dark-primary flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
+            <>
+                <Navbar />
+                <EditProfileSkeleton />
+            </>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-primary">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-primary animate-fade-in">
             <Navbar />
 
             <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -206,21 +208,21 @@ export default function EditProfilePage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Avatar Section */}
-                    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.1s' }}>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Foto Profile</h2>
 
                         <div className="flex flex-col md:flex-row items-center gap-6">
-                            <div className="relative">
-                                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                            <div className="relative group">
+                                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center ring-4 ring-transparent group-hover:ring-primary-200 dark:group-hover:ring-primary-900/30 transition-all">
                                     {avatarPreview ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
                                             src={avatarPreview}
                                             alt="Avatar"
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                         />
                                     ) : (
-                                        <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-16 h-16 text-gray-400 transition-colors group-hover:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                         </svg>
                                     )}
@@ -233,7 +235,7 @@ export default function EditProfilePage() {
                                             setAvatarPreview('');
                                             setFormData({ ...formData, avatar_url: '' });
                                         }}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 hover:scale-110 transition-all shadow-lg"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -267,7 +269,7 @@ export default function EditProfilePage() {
                     </div>
 
                     {/* Personal Information */}
-                    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.2s' }}>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Informasi Pribadi</h2>
 
                         <div className="space-y-4">
@@ -280,7 +282,7 @@ export default function EditProfilePage() {
                                     required
                                     value={formData.full_name}
                                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white transition-all hover:border-primary-400 dark:hover:border-primary-500"
                                     placeholder="Masukkan nama lengkap"
                                 />
                             </div>
@@ -293,7 +295,7 @@ export default function EditProfilePage() {
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white transition-all hover:border-primary-400 dark:hover:border-primary-500"
                                     placeholder="08xxxxxxxxxx"
                                 />
                             </div>
@@ -306,8 +308,8 @@ export default function EditProfilePage() {
                                     type="text"
                                     value={formData.institution}
                                     onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                    placeholder="Nama instansi/perusahaan"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white transition-all hover:border-primary-400 dark:hover:border-primary-500"
+                                    placeholder="Nama instansi atau perusahaan"
                                 />
                             </div>
 
@@ -319,7 +321,7 @@ export default function EditProfilePage() {
                                     type="text"
                                     value={formData.position}
                                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white transition-all hover:border-primary-400 dark:hover:border-primary-500"
                                     placeholder="Posisi/jabatan Anda"
                                 />
                             </div>
@@ -332,7 +334,7 @@ export default function EditProfilePage() {
                                     type="text"
                                     value={formData.city}
                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white transition-all hover:border-primary-400 dark:hover:border-primary-500"
                                     placeholder="Kota tempat tinggal"
                                 />
                             </div>
@@ -340,11 +342,11 @@ export default function EditProfilePage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
                         <button
                             type="submit"
                             disabled={loading || uploading}
-                            className="flex-1 bg-primary-600 dark:bg-primary-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 bg-primary-600 dark:bg-primary-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
                             {loading || uploading ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -357,7 +359,7 @@ export default function EditProfilePage() {
                         </button>
                         <Link
                             href="/dashboard"
-                            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-center"
+                            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all hover:scale-[1.02] text-center"
                         >
                             Batal
                         </Link>

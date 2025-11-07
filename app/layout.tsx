@@ -26,10 +26,15 @@ export const metadata: Metadata = {
                 url: '/favicon.svg',
                 type: 'image/svg+xml',
             },
+            {
+                url: '/icon-32x32.svg',
+                type: 'image/svg+xml',
+                sizes: '32x32',
+            },
         ],
         apple: [
             {
-                url: '/favicon.svg',
+                url: '/apple-touch-icon.svg',
                 type: 'image/svg+xml',
             },
         ],
