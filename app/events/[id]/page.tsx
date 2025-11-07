@@ -85,6 +85,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         return () => {
             supabase.removeChannel(channel);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventId, user]); const checkAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
@@ -197,28 +198,47 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
     const handleFileUpload = async (fieldName: string, file: File): Promise<string | null> => {
         try {
+            console.log('📤 Starting file upload for:', fieldName);
+            console.log('File details:', { name: file.name, size: file.size, type: file.type });
+
             setUploadingFiles(prev => ({ ...prev, [fieldName]: true }));
 
             const fileExt = file.name.split('.').pop();
             const fileName = `${user.id}-${Date.now()}.${fileExt}`;
             const filePath = `payment-proofs/${fileName}`;
 
+            console.log('📂 Uploading to path:', filePath);
+
             const { error: uploadError } = await supabase.storage
                 .from('events')
                 .upload(filePath, file);
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error('❌ Upload error:', uploadError);
+                throw uploadError;
+            }
 
             // Get public URL
             const { data } = supabase.storage
                 .from('events')
                 .getPublicUrl(filePath);
 
+            console.log('✅ File uploaded successfully:', data.publicUrl);
+
             setUploadingFiles(prev => ({ ...prev, [fieldName]: false }));
             return data.publicUrl;
         } catch (error: any) {
-            console.error('Error uploading file:', error);
-            toast.error('Gagal upload file');
+            console.error('❌ Error uploading file:', error);
+
+            // Show specific error message
+            if (error.message?.includes('not found')) {
+                toast.error('Storage bucket "events" belum dibuat. Silakan hubungi admin.');
+            } else if (error.message?.includes('permission')) {
+                toast.error('Tidak ada izin upload. Cek RLS policy storage.');
+            } else {
+                toast.error(`Gagal upload file: ${error.message}`);
+            }
+
             setUploadingFiles(prev => ({ ...prev, [fieldName]: false }));
             return null;
         }
@@ -252,6 +272,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         if (!user) {
             router.push('/auth/login');
             return;
+        }
+
+        // Check if any files are still uploading
+        const isStillUploading = Object.values(uploadingFiles).some(uploading => uploading);
+        if (isStillUploading) {
+            toast.error(t('event.pleaseWaitUpload') || 'Harap tunggu upload file selesai');
+            return;
+        }
+
+        // Validate required file fields
+        const requiredFileFields = formFields.filter(
+            field => field.field_type === 'file' && field.is_required
+        );
+
+        for (const field of requiredFileFields) {
+            if (!formData[field.field_name]) {
+                toast.error(`${field.field_name} wajib diisi`);
+                return;
+            }
         }
 
         try {
@@ -733,13 +772,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                                                 <button
                                                     type="submit"
-                                                    disabled={!isProfileComplete}
-                                                    className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${isProfileComplete
-                                                        ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
-                                                        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                                    disabled={!isProfileComplete || Object.values(uploadingFiles).some(u => u)}
+                                                    className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${isProfileComplete && !Object.values(uploadingFiles).some(u => u)
+                                                            ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
+                                                            : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                                                         }`}
                                                 >
-                                                    {isProfileComplete ? t('event.requestToJoin') : t('event.completeProfileFirst')}
+                                                    {Object.values(uploadingFiles).some(u => u)
+                                                        ? (t('event.uploading') || 'Uploading...')
+                                                        : isProfileComplete
+                                                            ? t('event.requestToJoin')
+                                                            : t('event.completeProfileFirst')
+                                                    }
                                                 </button>
                                             </form>
                                         </>

@@ -71,7 +71,8 @@ export default function QuillEditor({ value, onChange, placeholder = 'Write some
                 quillRef.current.off('text-change');
             }
         };
-    }, [placeholder, onChange]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [placeholder]);
 
     // Update content when value changes externally
     useEffect(() => {

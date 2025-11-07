@@ -67,6 +67,7 @@ export default function CreateEventPage() {
                 !field.field_name.toLowerCase().includes('payment proof')
             ));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formData.registration_fee]);
 
     const checkAuth = async () => {

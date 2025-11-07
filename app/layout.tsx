@@ -49,7 +49,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="id" suppressHydrationWarning>
-            <body 
+            <body
                 className={`${inter.className} flex flex-col min-h-screen`}
                 suppressHydrationWarning
             >

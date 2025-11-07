@@ -184,8 +184,8 @@ export default function DebugStoragePage() {
                             💡 Troubleshooting Tips
                         </h3>
                         <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
-                            <li>1. Jika data tidak muncul di browser normal tapi OK di incognito → Klik "Cleanup Supabase Storage"</li>
-                            <li>2. Jika masih bermasalah → Klik "FULL RESET"</li>
+                            <li>1. Jika data tidak muncul di browser normal tapi OK di incognito → Klik &quot;Cleanup Supabase Storage&quot;</li>
+                            <li>2. Jika masih bermasalah → Klik &quot;FULL RESET&quot;</li>
                             <li>3. Setelah cleanup/reset → Login ulang</li>
                             <li>4. Alternatif: Clear browser cache/cookies secara manual</li>
                         </ul>

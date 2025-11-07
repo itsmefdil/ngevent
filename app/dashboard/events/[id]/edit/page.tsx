@@ -95,6 +95,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 ));
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formData.registration_fee, loadingData]);
 
     const checkAuth = async () => {

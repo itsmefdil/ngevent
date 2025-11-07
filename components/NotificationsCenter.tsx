@@ -23,13 +23,6 @@ export default function NotificationsCenter({ userId }: { userId: string }) {
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (userId) {
-            loadNotifications();
-            subscribeToNotifications();
-        }
-    }, [userId]);
-
     const loadNotifications = async () => {
         try {
             setLoading(true);
@@ -90,6 +83,15 @@ export default function NotificationsCenter({ userId }: { userId: string }) {
             supabase.removeChannel(channel);
         };
     };
+
+    useEffect(() => {
+        if (userId) {
+            loadNotifications();
+            const cleanup = subscribeToNotifications();
+            return cleanup;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId]);
 
     const markAsRead = async (notificationId: string) => {
         try {

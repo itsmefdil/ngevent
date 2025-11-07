@@ -127,22 +127,40 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
 
     const updateRegistrationStatus = async (registrationId: string, status: 'registered' | 'attended' | 'cancelled') => {
         try {
-            const { error } = await supabase
+            console.log('🔄 Updating registration status:', { registrationId, status });
+
+            const { data, error } = await supabase
                 .from('registrations')
                 .update({ status })
-                .eq('id', registrationId);
+                .eq('id', registrationId)
+                .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Update error:', error);
+                throw error;
+            }
 
-            toast.success('Status berhasil diupdate');
+            console.log('✅ Status updated successfully:', data);
 
-            // Update local state
-            setRegistrations(registrations.map(reg =>
-                reg.id === registrationId ? { ...reg, status } : reg
-            ));
+            toast.success(`Status berhasil diubah menjadi ${status}`);
+
+            // Update local state using callback to ensure we have latest state
+            setRegistrations(prevRegistrations =>
+                prevRegistrations.map(reg =>
+                    reg.id === registrationId ? { ...reg, status } : reg
+                )
+            );
         } catch (error: any) {
-            console.error('Error updating status:', error);
-            toast.error('Gagal update status');
+            console.error('❌ Error updating status:', error);
+
+            // Show specific error message
+            if (error.message?.includes('permission')) {
+                toast.error('Tidak ada izin untuk mengubah status. Cek RLS policy.');
+            } else if (error.message?.includes('violates')) {
+                toast.error('Status tidak valid. Pilih: registered, attended, atau cancelled.');
+            } else {
+                toast.error(`Gagal update status: ${error.message}`);
+            }
         }
     };
 
@@ -532,15 +550,15 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
                                                     <div className="flex items-center gap-2">
                                                         <select
                                                             value={registration.status}
-                                                            onChange={(e) => updateRegistrationStatus(
-                                                                registration.id,
-                                                                e.target.value as 'registered' | 'attended' | 'cancelled'
-                                                            )}
-                                                            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                            onChange={(e) => {
+                                                                const newStatus = e.target.value as 'registered' | 'attended' | 'cancelled';
+                                                                updateRegistrationStatus(registration.id, newStatus);
+                                                            }}
+                                                            className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white cursor-pointer transition-all hover:border-primary-400"
                                                         >
-                                                            <option value="registered">Registered</option>
-                                                            <option value="attended">Attended</option>
-                                                            <option value="cancelled">Cancelled</option>
+                                                            <option value="registered">✓ Registered</option>
+                                                            <option value="attended">★ Attended</option>
+                                                            <option value="cancelled">✗ Cancelled</option>
                                                         </select>
 
                                                         <button
