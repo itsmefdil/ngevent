@@ -117,6 +117,9 @@ const translations: Record<Language, Record<string, string>> = {
         'events.allCategories': 'Semua Kategori',
         'events.noEvents': 'Tidak ada event',
         'events.noEventsDesc': 'Belum ada event yang tersedia saat ini.',
+        'event.capacity': 'Kapasitas Event',
+        'event.registrationClosed': 'Pendaftaran Ditutup',
+        'event.capacityReached': 'Kapasitas Penuh',
 
         // Common
         'common.loading': 'Memuat...',
@@ -323,6 +326,9 @@ const translations: Record<Language, Record<string, string>> = {
         'events.allCategories': 'All Categories',
         'events.noEvents': 'No events',
         'events.noEventsDesc': 'No events available at this time.',
+        'event.capacity': 'Event Capacity',
+        'event.registrationClosed': 'Registration Closed',
+        'event.capacityReached': 'Capacity Reached',
 
         // Common
         'common.loading': 'Loading...',

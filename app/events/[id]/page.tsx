@@ -36,6 +36,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     const [isProfileComplete, setIsProfileComplete] = useState(false);
     const [organizer, setOrganizer] = useState<any>(null);
     const [customImages, setCustomImages] = useState<any[]>([]);
+    // Capacity / registrations tracking
+    const [registrationCount, setRegistrationCount] = useState<number | null>(null);
+    const [isCapacityReached, setIsCapacityReached] = useState(false);
 
     useEffect(() => {
         params.then((resolvedParams) => {
@@ -86,6 +89,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         console.log('User registration changed, rechecking status...');
                         checkRegistration(user.id);
                     }
+                    // Always refresh registration count and capacity status
+                    fetchRegistrationCount();
                 }
             )
             .subscribe();
@@ -132,6 +137,50 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         setIsRegistered(!!data);
     };
 
+    // Helper: update isCapacityReached based on count and capacity
+    const updateCapacityStatus = (countVal: number | null, capacityVal?: number | null) => {
+        const cap = typeof capacityVal === 'number' ? capacityVal : (event?.capacity ?? null);
+        if (cap && cap > 0 && countVal !== null) {
+            setIsCapacityReached(countVal >= cap);
+        } else {
+            setIsCapacityReached(false);
+        }
+    };
+
+    // Fetch registration count for this event (via admin API, fallback to client if needed)
+    const fetchRegistrationCount = async (): Promise<number | null> => {
+        if (!eventId) return null;
+
+        // 1) Try admin API (bypasses RLS)
+        try {
+            const res = await fetch(`/api/events/${eventId}/registrations/count`, { cache: 'no-store' });
+            if (res.ok) {
+                const json = await res.json();
+                const apiCount = typeof json.count === 'number' ? json.count : 0;
+                setRegistrationCount(apiCount);
+                updateCapacityStatus(apiCount);
+                return apiCount;
+            }
+        } catch (e) {
+            // ignore, fallback below
+        }
+
+        // 2) Fallback: client-side count (limited by RLS; still useful when admin key missing)
+        const { count, error } = await supabase
+            .from('registrations')
+            .select('id', { count: 'exact', head: true })
+            .eq('event_id', eventId)
+            .neq('status', 'cancelled');
+        if (error) {
+            console.error('Error fetching registration count (fallback):', error.message || error);
+            return null;
+        }
+        const safeCount = count ?? 0;
+        setRegistrationCount(safeCount);
+        updateCapacityStatus(safeCount);
+        return safeCount;
+    };
+
     const loadEvent = async () => {
         if (!eventId) {
             return;
@@ -148,6 +197,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             // full already contains event base fields; paint lightweight pieces first
             setEvent(full as unknown as Event);
             setOrganizer(full.organizer || null);
+            // Fetch current registration count & capacity status
+            try {
+                const currentCount = await fetchRegistrationCount();
+                const capacityVal = (full as any).capacity as number | null | undefined;
+                updateCapacityStatus(currentCount, typeof capacityVal === 'number' ? capacityVal : null);
+            } catch (e) {
+                // non-critical
+            }
             // Defer heavy arrays to idle time to avoid blocking initial render
             const applyHeavyData = () => {
                 setFormFields((full as any).formFields || []);
@@ -305,6 +362,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             return;
         }
 
+        // Block if capacity reached
+        if (event?.capacity && event.capacity > 0 && isCapacityReached) {
+            toast.error(t('event.registrationClosed') || 'Pendaftaran sudah ditutup');
+            return;
+        }
+
         // Check if any files are still uploading
         const isStillUploading = Object.values(uploadingFiles).some(uploading => uploading);
         if (isStillUploading) {
@@ -371,6 +434,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
             toast.success(t('event.registrationSuccessToast') || 'Berhasil mendaftar event!');
             setIsRegistered(true);
+            // Optimistically increment count & update capacity status
+            if (registrationCount !== null) {
+                const newCount = registrationCount + 1;
+                setRegistrationCount(newCount);
+                updateCapacityStatus(newCount);
+            } else {
+                fetchRegistrationCount();
+            }
         } catch (error: any) {
             console.error('Registration error:', error);
             toast.error(error.message || t('event.registrationError') || 'Gagal mendaftar event');
@@ -593,7 +664,55 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     {/* Right Column - Registration Form */}
                     <div className="lg:col-span-3">
                         <div className="lg:sticky lg:top-24">
-                            {!isRegistered ? (
+                            {isRegistered ? (
+                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                                    <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-2xl p-6 text-center">
+                                        <svg
+                                            className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                        <h3 className="text-xl font-bold text-green-900 dark:text-green-300 mb-2">
+                                            {t('event.alreadyRegistered')}
+                                        </h3>
+                                        <p className="text-green-700 dark:text-green-400 text-sm">
+                                            {t('event.registrationSuccess')}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (event?.capacity && event.capacity > 0 && isCapacityReached) ? (
+                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                                    <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+                                        <svg
+                                            className="w-16 h-16 text-red-600 dark:text-red-400 mx-auto mb-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M4.93 4.93l14.14 14.14M12 5a7 7 0 100 14 7 7 0 000-14z" />
+                                        </svg>
+                                        <h3 className="text-xl font-bold text-red-900 dark:text-red-300 mb-2">
+                                            {t('event.registrationClosed') || 'Pendaftaran sudah ditutup'}
+                                        </h3>
+                                        <p className="text-red-700 dark:text-red-400 text-sm">
+                                            {t('event.capacityReached') || 'Kapasitas peserta telah terpenuhi.'}
+                                        </p>
+                                        {typeof event.capacity === 'number' && registrationCount !== null && (
+                                            <p className="mt-2 text-xs text-red-800 dark:text-red-300">
+                                                {registrationCount} / {event.capacity}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
                                 <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl shadow-lg dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
                                     {/* Registration Header */}
                                     <div className="mb-4 sm:mb-6">
@@ -878,30 +997,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                             </Link>
                                         </div>
                                     )}
-                                </div>
-                            ) : (
-                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
-                                    <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-2xl p-6 text-center">
-                                        <svg
-                                            className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                        <h3 className="text-xl font-bold text-green-900 dark:text-green-300 mb-2">
-                                            {t('event.alreadyRegistered')}
-                                        </h3>
-                                        <p className="text-green-700 dark:text-green-400 text-sm">
-                                            {t('event.registrationSuccess')}
-                                        </p>
-                                    </div>
                                 </div>
                             )}
                         </div>
