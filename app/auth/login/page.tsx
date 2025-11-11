@@ -30,7 +30,7 @@ export default function LoginPage() {
                 setShowVerifiedBanner(true);
                 toast.success('Email berhasil diverifikasi. Silakan login.');
             }
-        } catch {}
+        } catch { }
 
         // Check initial theme
         const checkTheme = () => {
