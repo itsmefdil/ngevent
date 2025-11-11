@@ -372,7 +372,7 @@ export async function getEventWithRelations(eventId: string) {
         // Fetch organizer separately (karena tidak bisa JOIN ke profiles dari events)
         const { data: organizer, error: organizerError } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url, city')
+            .select('id, full_name, avatar_url, city, phone')
             .eq('id', event.organizer_id)
             .single();
 

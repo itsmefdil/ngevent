@@ -29,6 +29,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [isRegistered, setIsRegistered] = useState(false);
+    const [isRegistrationCancelled, setIsRegistrationCancelled] = useState(false);
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
     const [filePreview, setFilePreview] = useState<Record<string, string>>({});
@@ -39,6 +40,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     // Capacity / registrations tracking
     const [registrationCount, setRegistrationCount] = useState<number | null>(null);
     const [isCapacityReached, setIsCapacityReached] = useState(false);
+    const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
     useEffect(() => {
         params.then((resolvedParams) => {
@@ -100,7 +103,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             supabase.removeChannel(channel);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [eventId, user]); const checkAuth = async () => {
+    }, [eventId, user]);
+
+    const checkAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
 
@@ -134,7 +139,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             .eq('user_id', userId)
             .single();
 
-        setIsRegistered(!!data);
+        if (data) {
+            if (data.status === 'cancelled') {
+                setIsRegistered(false);
+                setIsRegistrationCancelled(true);
+            } else {
+                setIsRegistered(true);
+                setIsRegistrationCancelled(false);
+            }
+        } else {
+            setIsRegistered(false);
+            setIsRegistrationCancelled(false);
+        }
     };
 
     // Helper: update isCapacityReached based on count and capacity
@@ -362,6 +378,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             return;
         }
 
+        // Block if registration was previously cancelled
+        if (isRegistrationCancelled) {
+            toast.error(language === 'id'
+                ? 'Pendaftaran tidak dapat dilakukan. Hubungi penyelenggara via WhatsApp untuk mendaftar ulang.'
+                : 'Registration not available. Contact organizer via WhatsApp to re-register.'
+            );
+            return;
+        }
+
         // Block if capacity reached
         if (event?.capacity && event.capacity > 0 && isCapacityReached) {
             toast.error(t('event.registrationClosed') || 'Pendaftaran sudah ditutup');
@@ -439,6 +464,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 : "If you don't see the email, check your Spam/Promotions folder.";
             toast(spamNotice, { icon: '✉️' });
             setIsRegistered(true);
+            setShowRegistrationModal(false); // Close modal after successful registration
             // Optimistically increment count & update capacity status
             if (registrationCount !== null) {
                 const newCount = registrationCount + 1;
@@ -450,6 +476,36 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         } catch (error: any) {
             console.error('Registration error:', error);
             toast.error(error.message || t('event.registrationError') || 'Gagal mendaftar event');
+        }
+    };
+
+    const handleCancelRegistration = async () => {
+        if (!user || !eventId) return;
+
+        try {
+            const { error } = await supabase
+                .from('registrations')
+                .update({ status: 'cancelled' })
+                .eq('event_id', eventId)
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+
+            toast.success(t('event.registrationCancelled') || 'Pendaftaran berhasil dibatalkan');
+            setIsRegistered(false);
+            setShowCancelConfirmation(false);
+
+            // Update registration count
+            if (registrationCount !== null) {
+                const newCount = registrationCount - 1;
+                setRegistrationCount(newCount);
+                updateCapacityStatus(newCount);
+            } else {
+                fetchRegistrationCount();
+            }
+        } catch (error: any) {
+            console.error('Cancel registration error:', error);
+            toast.error(error.message || t('event.cancelError') || 'Gagal membatalkan pendaftaran');
         }
     };
 
@@ -682,45 +738,95 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     {/* Right Column - Registration Form */}
                     <div className="lg:col-span-3">
                         <div className="lg:sticky lg:top-24">
-                            {isRegistered ? (
+                            {isRegistrationCancelled ? (
+                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
+                                    <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+                                        {/* Cancelled Icon */}
+                                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </div>
+
+                                        <h3 className="text-xl font-bold text-red-900 dark:text-red-300 mb-2">
+                                            {language === 'id' ? 'Pendaftaran Dibatalkan' : 'Registration Cancelled'}
+                                        </h3>
+                                        <p className="text-red-700 dark:text-red-400 text-sm mb-4">
+                                            {language === 'id'
+                                                ? 'Pendaftaran Anda telah dibatalkan. Untuk mendaftar kembali, silakan hubungi penyelenggara event.'
+                                                : 'Your registration has been cancelled. To register again, please contact the event organizer.'
+                                            }
+                                        </p>
+
+                                        {/* Contact Organizer Button */}
+                                        <button
+                                            onClick={() => {
+                                                if (organizer?.phone) {
+                                                    // Format phone number for WhatsApp (remove + and spaces, add Indonesian country code if needed)
+                                                    let phoneNumber = organizer.phone.replace(/[\+\s-]/g, '');
+                                                    // Add Indonesian country code (+62) if number starts with 0
+                                                    if (phoneNumber.startsWith('0')) {
+                                                        phoneNumber = '62' + phoneNumber.substring(1);
+                                                    }
+                                                    const message = encodeURIComponent(`Halo ${organizer.full_name},\n\nSaya ingin mendaftar ulang untuk event "${event?.title}".\n\nTerima kasih.`);
+                                                    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                                                } else {
+                                                    toast.error(language === 'id' ? 'Nomor WhatsApp penyelenggara tidak tersedia' : 'Organizer WhatsApp number not available');
+                                                }
+                                            }}
+                                            className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                        >
+                                            {language === 'id' ? 'Hubungi via WhatsApp' : 'Contact via WhatsApp'}
+                                        </button>
+
+                                        {/* Status Badge */}
+                                        <div className="mt-4">
+                                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium">
+                                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                                {language === 'id' ? 'Dibatalkan' : 'Cancelled'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : isRegistered ? (
                                 <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
                                     <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-2xl p-6 text-center">
-                                        <svg
-                                            className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                                        {/* Simple Success Icon */}
+                                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+
                                         <h3 className="text-xl font-bold text-green-900 dark:text-green-300 mb-2">
                                             {t('event.alreadyRegistered')}
                                         </h3>
-                                        <p className="text-green-700 dark:text-green-400 text-sm">
+                                        <p className="text-green-700 dark:text-green-400 text-sm mb-4">
                                             {t('event.registrationSuccess')}
                                         </p>
-                                        {/* Email notice: check spam if not in inbox */}
-                                        <div className="mt-4 text-left">
-                                            <div className="flex items-start gap-2 text-yellow-800 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-sm">
-                                                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 19a7 7 0 110-14 7 7 0 010 14z" />
-                                                </svg>
-                                                <div>
-                                                    <div className="font-medium">
-                                                        {language === 'id' ? 'Cek email konfirmasi' : 'Check confirmation email'}
-                                                    </div>
-                                                    <div className="opacity-90">
-                                                        {language === 'id'
-                                                            ? `Kami mengirim email ke ${user?.email || 'alamat email Anda'}. Jika tidak terlihat di Kotak Masuk, harap cek folder Spam atau Promosi.`
-                                                            : `We sent an email to ${user?.email || 'your email address'}. If it is not in your Inbox, please check your Spam or Promotions folder.`}
-                                                    </div>
-                                                </div>
-                                            </div>
+
+                                        {/* Simple Status Badge */}
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium mb-4">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            {language === 'id' ? 'Pendaftaran Aktif' : 'Registration Active'}
+                                        </div>
+
+                                        {/* Simple Action Button */}
+                                        <button
+                                            onClick={() => setShowCancelConfirmation(true)}
+                                            className="w-full px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
+                                        >
+                                            {language === 'id' ? 'Batalkan Pendaftaran' : 'Cancel Registration'}
+                                        </button>
+
+                                        {/* Simple Email Notice */}
+                                        <div className="mt-4 text-center">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                {language === 'id'
+                                                    ? 'Cek email untuk konfirmasi pendaftaran'
+                                                    : 'Check email for registration confirmation'
+                                                }
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -769,257 +875,46 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                                 </div>
                                             </div>
                                         )}
-
-
                                     </div>
 
-
-
-                                    {/* Registration Form */}
+                                    {/* Registration Button */}
                                     {user ? (
-                                        <>
-                                            {/* Profile Incomplete Warning */}
-                                            {!isProfileComplete && (
-                                                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-4 mb-4">
-                                                    <div className="flex items-start gap-2 sm:gap-3">
-                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                        </svg>
-                                                        <div className="flex-1 min-w-0">
-                                                            <h4 className="text-sm sm:text-base font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
-                                                                {t('event.completeProfile')}
-                                                            </h4>
-                                                            <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-3">
-                                                                {t('event.completeProfileDesc')}
-                                                            </p>
-                                                            <Link
-                                                                href="/profile/edit"
-                                                                className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors"
-                                                            >
-                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                                {t('event.completeProfileNow')}
-                                                            </Link>
-                                                        </div>
-                                                    </div>
+                                        <div className="space-y-3">
+                                            {isRegistrationCancelled && (
+                                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                                    <p className="text-red-700 dark:text-red-400 text-sm text-center">
+                                                        {language === 'id'
+                                                            ? 'Pendaftaran tidak dapat dilakukan. Hubungi penyelenggara via WhatsApp untuk mendaftar ulang.'
+                                                            : 'Registration not available. Contact organizer via WhatsApp to re-register.'
+                                                        }
+                                                    </p>
                                                 </div>
                                             )}
-
-                                            <form onSubmit={handleRegister} className="space-y-4">
-                                                {/* User Info Display */}
-                                                <div className="bg-gray-50 dark:bg-dark-secondary rounded-lg p-4 mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        {profile?.avatar_url ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img
-                                                                src={profile.avatar_url}
-                                                                alt={profile.full_name || user.email}
-                                                                className="w-10 h-10 rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-10 h-10 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                                                {(profile?.full_name || user.email)?.charAt(0).toUpperCase()}
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <div className="font-medium text-gray-900 dark:text-white text-sm">
-                                                                {profile?.full_name || user.user_metadata?.full_name || user.email}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                {user.email}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Custom Form Fields */}
-                                                {formFields.map((field) => (
-                                                    <div key={field.id}>
-                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                            {field.field_name}
-                                                            {field.is_required && <span className="text-red-500 ml-1">*</span>}
-                                                        </label>
-                                                        {field.field_type === 'textarea' ? (
-                                                            <textarea
-                                                                required={field.is_required}
-                                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white text-sm"
-                                                                rows={3}
-                                                                onChange={(e) =>
-                                                                    setFormData({ ...formData, [field.field_name]: e.target.value })
-                                                                }
-                                                            />
-                                                        ) : field.field_type === 'select' ? (
-                                                            <select
-                                                                required={field.is_required}
-                                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white text-sm"
-                                                                onChange={(e) =>
-                                                                    setFormData({ ...formData, [field.field_name]: e.target.value })
-                                                                }
-                                                            >
-                                                                <option value="">{t('event.selectOption')}</option>
-                                                                {(field.options as any)?.options?.map((opt: string) => (
-                                                                    <option key={opt} value={opt}>
-                                                                        {opt}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        ) : field.field_type === 'file' ? (
-                                                            <div className="space-y-2">
-                                                                {filePreview[field.field_name] ? (
-                                                                    <div className="space-y-3">
-                                                                        <div className="relative rounded-lg overflow-hidden border-2 border-green-500 dark:border-green-400">
-                                                                            {filePreview[field.field_name] === 'PDF_FILE' ? (
-                                                                                <div className="w-full h-48 bg-gray-100 dark:bg-dark-secondary flex flex-col items-center justify-center">
-                                                                                    <svg className="w-16 h-16 text-red-500 mb-2" fill="currentColor" viewBox="0 0 24 24">
-                                                                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
-                                                                                        <path d="M14 2v6h6" />
-                                                                                        <path d="M10 13h4M10 17h4" />
-                                                                                    </svg>
-                                                                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">PDF File</p>
-                                                                                </div>
-                                                                            ) : (
-                                                                                // eslint-disable-next-line @next/next/no-img-element
-                                                                                <img
-                                                                                    src={filePreview[field.field_name]}
-                                                                                    alt="Preview"
-                                                                                    className="w-full h-48 object-cover"
-                                                                                />
-                                                                            )}
-                                                                            <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-2">
-                                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                                </svg>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className="flex items-center justify-between gap-2">
-                                                                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                                                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                                </svg>
-                                                                                <span className="text-sm text-green-600 dark:text-green-400 truncate">{t('event.fileUploadSuccess')}</span>
-                                                                            </div>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => {
-                                                                                    setFilePreview(prev => {
-                                                                                        const newPreview = { ...prev };
-                                                                                        delete newPreview[field.field_name];
-                                                                                        return newPreview;
-                                                                                    });
-                                                                                    setFormData(prev => {
-                                                                                        const newData = { ...prev };
-                                                                                        delete newData[field.field_name];
-                                                                                        return newData;
-                                                                                    });
-                                                                                    toast.success('File dihapus. Silakan upload ulang jika diperlukan');
-                                                                                }}
-                                                                                className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
-                                                                            >
-                                                                                Ganti
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="file"
-                                                                            id={`file-${field.id}`}
-                                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                                            accept="image/*,.pdf"
-                                                                            capture="environment"
-                                                                            required={field.is_required}
-                                                                            onChange={(e) => handleFileChange(field.field_name, e)}
-                                                                            disabled={uploadingFiles[field.field_name]}
-                                                                        />
-                                                                        <label
-                                                                            htmlFor={`file-${field.id}`}
-                                                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary transition-colors active:bg-gray-200 dark:active:bg-dark-800"
-                                                                        >
-                                                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
-                                                                                {uploadingFiles[field.field_name] ? (
-                                                                                    <>
-                                                                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 dark:border-primary-400 mb-2"></div>
-                                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('event.uploading')}</p>
-                                                                                    </>
-                                                                                ) : (
-                                                                                    <>
-                                                                                        <svg className="w-8 h-8 mb-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                                                        </svg>
-                                                                                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center px-2">
-                                                                                            <span className="font-semibold">{t('event.clickToUpload')}</span>
-                                                                                            <span className="hidden sm:inline"> {t('event.orDragDrop')}</span>
-                                                                                        </p>
-                                                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('event.fileFormat')}</p>
-                                                                                    </>
-                                                                                )}
-                                                                            </div>
-                                                                        </label>
-                                                                    </div>
-                                                                )}
-
-                                                                <br />
-                                                                {/* Custom Images Section */}
-                                                                {customImages.length > 0 && (
-
-                                                                    <div className="space-y-3">
-                                                                        {customImages.map((image, index) => (
-                                                                            <div key={index} className="group">
-                                                                                <div className="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-dark-secondary mb-2">
-                                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                                    <img
-                                                                                        src={image.url}
-                                                                                        alt={image.title}
-                                                                                        className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                                                    />
-                                                                                </div>
-                                                                                <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-1">
-                                                                                    {image.title}
-                                                                                </h4>
-                                                                                {image.description && (
-                                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                                                        {image.description}
-                                                                                    </p>
-                                                                                )}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-
-                                                            </div>
-
-
-                                                        ) : (
-                                                            <input
-                                                                type={field.field_type}
-                                                                required={field.is_required}
-                                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white text-sm"
-                                                                onChange={(e) =>
-                                                                    setFormData({ ...formData, [field.field_name]: e.target.value })
-                                                                }
-                                                            />
-                                                        )}
-                                                    </div>
-                                                ))}
-
+                                            {!isProfileComplete && !isRegistrationCancelled && (
                                                 <button
-                                                    type="submit"
-                                                    disabled={!isProfileComplete || Object.values(uploadingFiles).some(u => u)}
-                                                    className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${isProfileComplete && !Object.values(uploadingFiles).some(u => u)
-                                                        ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
-                                                        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                                                        }`}
+                                                    onClick={() => {
+                                                        console.log('Navigate to profile edit from sidebar');
+                                                        window.location.href = '/profile/edit';
+                                                    }}
+                                                    className="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors"
                                                 >
-                                                    {Object.values(uploadingFiles).some(u => u)
-                                                        ? (t('event.uploading') || 'Uploading...')
-                                                        : isProfileComplete
-                                                            ? t('event.requestToJoin')
-                                                            : t('event.completeProfileFirst')
-                                                    }
+                                                    {t('event.completeProfileNow')}
                                                 </button>
-                                            </form>
-                                        </>
+                                            )}
+                                            <button
+                                                onClick={() => setShowRegistrationModal(true)}
+                                                disabled={!isProfileComplete || isRegistrationCancelled}
+                                                className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${(!isProfileComplete || isRegistrationCancelled)
+                                                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                                    : 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
+                                                    }`}
+                                            >
+                                                {isRegistrationCancelled
+                                                    ? (language === 'id' ? 'Pendaftaran Ditutup' : 'Registration Closed')
+                                                    : (isProfileComplete ? t('event.requestToJoin') : t('event.completeProfileFirst'))
+                                                }
+                                            </button>
+                                        </div>
                                     ) : (
                                         <div className="text-center py-6">
                                             <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -1039,6 +934,287 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                 </div>
             </div>
+
+            {/* Registration Modal */}
+            {showRegistrationModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowRegistrationModal(false)}>
+                    <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-6">
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                    {t('event.registrationForm') || 'Form Pendaftaran'}
+                                </h2>
+                                <button
+                                    onClick={() => setShowRegistrationModal(false)}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-dark-secondary rounded-lg transition-colors"
+                                >
+                                    <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Profile Incomplete Warning */}
+                            {!isProfileComplete && (
+                                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                                    <div className="flex items-start gap-3">
+                                        <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-base font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
+                                                {t('event.completeProfile')}
+                                            </h4>
+                                            <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-3">
+                                                {t('event.completeProfileDesc')}
+                                            </p>
+                                            <p className="text-xs text-yellow-600 dark:text-yellow-500">
+                                                Gunakan tombol di bawah untuk melengkapi profil Anda.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Registration Form */}
+                            <form onSubmit={handleRegister} className="space-y-6">
+                                {/* User Info Display */}
+                                <div className="bg-gray-50 dark:bg-dark-secondary rounded-lg p-4">
+                                    <div className="flex items-center gap-3">
+                                        {profile?.avatar_url ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={profile.avatar_url}
+                                                alt={profile.full_name || user.email}
+                                                className="w-12 h-12 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                                                {(profile?.full_name || user.email)?.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <div className="font-medium text-gray-900 dark:text-white">
+                                                {profile?.full_name || user.user_metadata?.full_name || user.email}
+                                            </div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                {user.email}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Custom Form Fields */}
+                                {formFields.map((field) => (
+                                    <div key={field.id}>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            {field.field_name}
+                                            {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                                        </label>
+                                        {field.field_type === 'textarea' ? (
+                                            <textarea
+                                                required={field.is_required}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white text-sm"
+                                                rows={4}
+                                                onChange={(e) =>
+                                                    setFormData({ ...formData, [field.field_name]: e.target.value })
+                                                }
+                                            />
+                                        ) : field.field_type === 'select' ? (
+                                            <select
+                                                required={field.is_required}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white text-sm"
+                                                onChange={(e) =>
+                                                    setFormData({ ...formData, [field.field_name]: e.target.value })
+                                                }
+                                            >
+                                                <option value="">{t('event.selectOption')}</option>
+                                                {(field.options as any)?.options?.map((opt: string) => (
+                                                    <option key={opt} value={opt}>
+                                                        {opt}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : field.field_type === 'file' ? (
+                                            <div className="space-y-3">
+                                                {filePreview[field.field_name] ? (
+                                                    <div className="space-y-3">
+                                                        <div className="relative rounded-lg overflow-hidden border-2 border-green-500 dark:border-green-400">
+                                                            {filePreview[field.field_name] === 'PDF_FILE' ? (
+                                                                <div className="w-full h-48 bg-gray-100 dark:bg-dark-secondary flex flex-col items-center justify-center">
+                                                                    <svg className="w-16 h-16 text-red-500 mb-2" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+                                                                        <path d="M14 2v6h6" />
+                                                                        <path d="M10 13h4M10 17h4" />
+                                                                    </svg>
+                                                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">PDF File</p>
+                                                                </div>
+                                                            ) : (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img
+                                                                    src={filePreview[field.field_name]}
+                                                                    alt="Preview"
+                                                                    className="w-full h-48 object-cover"
+                                                                />
+                                                            )}
+                                                            <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-2">
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                                <span className="text-sm text-green-600 dark:text-green-400 truncate">{t('event.fileUploadSuccess')}</span>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFilePreview(prev => {
+                                                                        const newPreview = { ...prev };
+                                                                        delete newPreview[field.field_name];
+                                                                        return newPreview;
+                                                                    });
+                                                                    setFormData(prev => {
+                                                                        const newData = { ...prev };
+                                                                        delete newData[field.field_name];
+                                                                        return newData;
+                                                                    });
+                                                                    toast.success('File dihapus. Silakan upload ulang jika diperlukan');
+                                                                }}
+                                                                className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                                                            >
+                                                                Ganti
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="relative">
+                                                        <input
+                                                            type="file"
+                                                            id={`file-${field.id}`}
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                            accept="image/*,.pdf"
+                                                            capture="environment"
+                                                            required={field.is_required}
+                                                            onChange={(e) => handleFileChange(field.field_name, e)}
+                                                            disabled={uploadingFiles[field.field_name]}
+                                                        />
+                                                        <label
+                                                            htmlFor={`file-${field.id}`}
+                                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary transition-colors active:bg-gray-200 dark:active:bg-dark-800"
+                                                        >
+                                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
+                                                                {uploadingFiles[field.field_name] ? (
+                                                                    <>
+                                                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 dark:border-primary-400 mb-2"></div>
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('event.uploading')}</p>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <svg className="w-8 h-8 mb-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                                        </svg>
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center px-2">
+                                                                            <span className="font-semibold">{t('event.clickToUpload')}</span>
+                                                                            <span className="hidden sm:inline"> {t('event.orDragDrop')}</span>
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('event.fileFormat')}</p>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <input
+                                                type={field.field_type}
+                                                required={field.is_required}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white text-sm"
+                                                onChange={(e) =>
+                                                    setFormData({ ...formData, [field.field_name]: e.target.value })
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+
+                                {/* Modal Actions */}
+                                <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowRegistrationModal(false)}
+                                        className="flex-1 px-4 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-secondary hover:bg-gray-200 dark:hover:bg-dark-primary rounded-lg font-medium transition-colors"
+                                    >
+                                        {t('event.cancel') || 'Batal'}
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={!isProfileComplete || Object.values(uploadingFiles).some(u => u)}
+                                        className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-colors ${isProfileComplete && !Object.values(uploadingFiles).some(u => u)
+                                            ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
+                                            : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        {Object.values(uploadingFiles).some(u => u)
+                                            ? (t('event.uploading') || 'Uploading...')
+                                            : isProfileComplete
+                                                ? t('event.requestToJoin')
+                                                : t('event.completeProfileFirst')
+                                        }
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Cancel Registration Confirmation Modal */}
+            {showCancelConfirmation && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                    {language === 'id' ? 'Batalkan Pendaftaran?' : 'Cancel Registration?'}
+                                </h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                    {language === 'id'
+                                        ? 'Apakah Anda yakin ingin membatalkan pendaftaran event ini? Tindakan ini tidak dapat dibatalkan.'
+                                        : 'Are you sure you want to cancel your registration for this event? This action cannot be undone.'
+                                    }
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowCancelConfirmation(false)}
+                                    className="flex-1 px-4 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-secondary hover:bg-gray-200 dark:hover:bg-dark-primary rounded-lg font-medium transition-colors"
+                                >
+                                    {language === 'id' ? 'Batal' : 'Cancel'}
+                                </button>
+                                <button
+                                    onClick={handleCancelRegistration}
+                                    className="flex-1 px-4 py-3 bg-red-600 text-white hover:bg-red-700 rounded-lg font-medium transition-colors"
+                                >
+                                    {language === 'id' ? 'Ya, Batalkan' : 'Yes, Cancel'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

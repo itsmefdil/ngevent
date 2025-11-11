@@ -120,6 +120,8 @@ const translations: Record<Language, Record<string, string>> = {
         'event.capacity': 'Kapasitas Event',
         'event.registrationClosed': 'Pendaftaran Ditutup',
         'event.capacityReached': 'Kapasitas Penuh',
+        'event.cancel': 'Batalkan Pendaftaran',
+        'event.registrationForm': 'Formulir Pendaftaran',
 
         // Common
         'common.loading': 'Memuat...',
@@ -311,6 +313,8 @@ const translations: Record<Language, Record<string, string>> = {
         'event.registrationError': 'Failed to register for event',
         'event.notFound': 'Event not found',
         'event.backToEvents': 'Back to event list',
+        'event.cancel': 'Cancel Registration',
+        'event.registrationForm': 'Registration Form',
 
         // Discover
         'discover.title': 'Discover Events',
