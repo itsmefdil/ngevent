@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyTurnstile, extractClientIp } from '@/lib/turnstile-verify';
+import { limit, getLockSeconds, incrFailAndMaybeLock } from '@/lib/rate-limit';
 
 // POST /api/auth/send-confirmation
 // Creates a signup link using Supabase Admin API and sends a branded email via Resend
@@ -9,10 +11,33 @@ export async function POST(req: NextRequest) {
         const email: string | undefined = body?.email;
         const password: string | undefined = body?.password;
         const full_name: string | undefined = body?.full_name;
+        const turnstileToken: string | undefined = body?.cfTurnstileToken;
+        const honey: string | undefined = body?.website; // honeypot field (must be empty)
 
         if (!email || !password) {
             return NextResponse.json({ success: false, message: 'email and password are required' }, { status: 400 });
         }
+
+        // Honeypot check
+        if (honey && String(honey).trim().length > 0) {
+            return NextResponse.json({ success: false, message: 'bot-detected' }, { status: 400 });
+        }
+
+        // Verify Turnstile token
+        const ip = extractClientIp(req);
+        const ver = await verifyTurnstile(turnstileToken, ip);
+        if (!ver.success) {
+            return NextResponse.json({ success: false, message: 'human-verification-failed', detail: ver.error }, { status: 403 });
+        }
+
+        // Rate limit per IP + email
+        const key = `reg:${ip || 'noip'}:${email}`;
+        const rl = await limit(key, 5);
+        if ((rl as any)?.success === false) {
+            return NextResponse.json({ success: false, message: 'too-many-requests' }, { status: 429 });
+        }
+
+        // Simple lockout after multiple failures (we'll count failures only when Supabase errors below)
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -51,7 +76,12 @@ export async function POST(req: NextRequest) {
         } as any);
 
         if (error) {
-            return NextResponse.json({ success: false, message: error.message }, { status: 400 });
+            // increase failure counter and maybe lock
+            const baseKey = `regfail:${ip || 'noip'}:${email}`;
+            await incrFailAndMaybeLock(baseKey, 5, 300); // 5 fails -> 5 min lock
+            const remaining = await getLockSeconds(`${baseKey}:lock`);
+            const status = remaining > 0 ? 423 : 400; // 423 Locked if lockout
+            return NextResponse.json({ success: false, message: error.message, lock_remaining: remaining }, { status });
         }
 
         // Try to ensure profile row exists ahead of time (idempotent)

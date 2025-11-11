@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { useLanguage } from '@/lib/language-context';
 import { useEffect, useState } from 'react';
+import TurnstileWidget from '@/components/TurnstileWidget';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import LoginSkeleton from '@/components/LoginSkeleton';
@@ -20,6 +21,8 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const [honeypot, setHoneypot] = useState(''); // bots fill this
 
     useEffect(() => {
         // Show verified banner/toast if coming from email verification
@@ -79,8 +82,30 @@ export default function LoginPage() {
             return;
         }
 
+        // Human verification pre-check
+        if (!turnstileToken) {
+            toast.error('Verifikasi manusia diperlukan');
+            return;
+        }
+
         try {
             setIsAuthenticating(true);
+            const guard = await fetch('/api/auth/verify-human', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cfTurnstileToken: turnstileToken, email })
+            });
+            if (!guard.ok) {
+                const j = await guard.json().catch(() => ({}));
+                throw new Error(j?.message || 'Verifikasi gagal');
+            }
+        } catch (err: any) {
+            setIsAuthenticating(false);
+            toast.error(err?.message || 'Verifikasi manusia gagal');
+            return;
+        }
+
+        try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -172,7 +197,7 @@ export default function LoginPage() {
                         )}
 
                         {/* Email Login Form */}
-                        <form onSubmit={handleEmailLogin} className="space-y-4">
+                        <form onSubmit={handleEmailLogin} className="space-y-4" autoComplete="off">
                             {/* Email Field */}
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -211,10 +236,24 @@ export default function LoginPage() {
                                 )}
                             </div>
 
+                            {/* Hidden honeypot */}
+                            <div className="hidden">
+                                <label htmlFor="website">Website</label>
+                                <input id="website" name="website" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
+                            </div>
+
+                            {/* Turnstile */}
+                            <div className="pt-2">
+                                <TurnstileWidget onVerify={(t) => setTurnstileToken(t)} onExpire={() => setTurnstileToken(null)} onError={() => setTurnstileToken(null)} />
+                                {!turnstileToken && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Verifikasi diperlukan untuk melanjutkan.</p>
+                                )}
+                            </div>
+
                             {/* Login Button */}
                             <button
                                 type="submit"
-                                disabled={isAuthenticating}
+                                disabled={isAuthenticating || !turnstileToken}
                                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg hover:scale-[1.02] transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                             >
                                 {isAuthenticating ? (

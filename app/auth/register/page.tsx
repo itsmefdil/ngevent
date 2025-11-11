@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { useLanguage } from '@/lib/language-context';
 import { useEffect, useState } from 'react';
+import TurnstileWidget from '@/components/TurnstileWidget';
 import Navbar from '@/components/Navbar';
 import LoginSkeleton from '@/components/LoginSkeleton';
 import Link from 'next/link';
@@ -27,6 +28,8 @@ export default function RegisterPage() {
         password?: string;
         confirmPassword?: string;
     }>({});
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const [honeypot, setHoneypot] = useState('');
 
     useEffect(() => {
         // Check initial theme
@@ -93,6 +96,11 @@ export default function RegisterPage() {
             return;
         }
 
+        if (!turnstileToken) {
+            toast.error('Verifikasi manusia diperlukan');
+            return;
+        }
+
         try {
             setIsAuthenticating(true);
 
@@ -104,6 +112,8 @@ export default function RegisterPage() {
                     email: formData.email,
                     password: formData.password,
                     full_name: formData.fullName,
+                    cfTurnstileToken: turnstileToken,
+                    website: honeypot,
                 })
             });
 
@@ -197,7 +207,7 @@ export default function RegisterPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 space-y-6 animate-fade-in hover:shadow-md transition-shadow duration-300" style={{ animationDelay: '0.3s' }}>
 
                         {/* Email Register Form */}
-                        <form onSubmit={handleRegister} className="space-y-4">
+                        <form onSubmit={handleRegister} className="space-y-4" autoComplete="off">
                             {/* Full Name Field */}
                             <div>
                                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -290,10 +300,24 @@ export default function RegisterPage() {
                                 )}
                             </div>
 
+                            {/* Hidden honeypot */}
+                            <div className="hidden">
+                                <label htmlFor="website">Website</label>
+                                <input id="website" name="website" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
+                            </div>
+
+                            {/* Turnstile */}
+                            <div className="pt-2">
+                                <TurnstileWidget onVerify={(t) => setTurnstileToken(t)} onExpire={() => setTurnstileToken(null)} onError={() => setTurnstileToken(null)} action="register" />
+                                {!turnstileToken && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Verifikasi diperlukan untuk melanjutkan.</p>
+                                )}
+                            </div>
+
                             {/* Register Button */}
                             <button
                                 type="submit"
-                                disabled={isAuthenticating}
+                                disabled={isAuthenticating || !turnstileToken}
                                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg hover:scale-[1.02] transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                             >
                                 {isAuthenticating ? (
