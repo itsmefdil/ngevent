@@ -312,9 +312,9 @@ export default function CreateEventPage() {
                         <p className="text-gray-600 dark:text-gray-400">Fill in the details to create your event</p>
                     </div>
 
-                    {/* Tab Navigation */}
-                    <div className="mb-8 border-b border-gray-200 dark:border-gray-700">
-                        <div className="flex space-x-8 overflow-x-auto">
+                    {/* Tab Navigation - sticky on scroll for easy switching */}
+                    <div className="mb-8 border-b border-gray-200 dark:border-gray-700 sticky top-0 lg:top-[90px] z-30 bg-gray-50/80 dark:bg-dark-primary/80 backdrop-blur supports-[backdrop-filter]:bg-gray-50/60 dark:supports-[backdrop-filter]:bg-dark-primary/60">
+                        <div className="flex space-x-8 overflow-x-auto px-1">
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('basic')}

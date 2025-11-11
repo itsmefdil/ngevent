@@ -1,3 +1,17 @@
+## Sticky top menu on Create/Edit Event
+
+Perbaikan: Menu tab (Basic Information, Speakers, Registration Form, Custom Images) sekarang selalu terlihat di bagian atas saat user melakukan scroll pada halaman Create Event dan Edit Event.
+
+Detail teknis:
+- Menambahkan `position: sticky` pada bar navigasi tab di kedua file:
+    - `app/dashboard/events/create/page.tsx`
+    - `app/dashboard/events/[id]/edit/page.tsx`
+- Offset agar tidak menabrak Navbar desktop: `top-0 lg:top-[72px]`
+- Tambahan background semi-transparan + blur untuk keterbacaan: `bg-gray-50/80 dark:bg-dark-primary/80 backdrop-blur` dan z-index `z-30` (Navbar memiliki `z-40`).
+
+Hasil:
+- Saat halaman panjang dan di-scroll, tab tetap berada di atas sehingga memudahkan berpindah antar bagian tanpa perlu kembali ke atas.
+
 # Edit Event Feature
 
 ## Overview
