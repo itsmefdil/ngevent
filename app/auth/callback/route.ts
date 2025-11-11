@@ -27,45 +27,56 @@ export async function GET(request: Request) {
 
         const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code);
 
-        // Check if this is a new user and send welcome email
+        // Kirim email welcome hanya sekali untuk user OAuth Google
+        // Guard utama: cek apakah sudah ada log welcome_email
         if (user && !error) {
-            // Check if profile exists (new user won't have one yet)
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('id, full_name')
-                .eq('id', user.id)
-                .single();
+            try {
+                // Pastikan ini login via Google (signInWithOAuth menghasilkan provider di metadata session)
+                // Supabase tidak selalu expose provider di user object di sisi server setelah exchange, jadi cukup cek apakah profile ada (user valid)
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('id, full_name')
+                    .eq('id', user.id)
+                    .single();
 
-            // If profile was just created, send welcome email
-            // The trigger will handle this automatically via the database
-            // But we can also manually trigger it here if needed
-            if (profile) {
-                try {
-                    console.log('📧 Attempting to send welcome email...');
-                    // Use NEXT_PUBLIC_SITE_URL for API calls
-                    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
-                    const response = await fetch(`${siteUrl}/api/webhooks/email`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            type: 'welcome_email',
-                            user_id: user.id,
-                            email: user.email,
-                            name: profile.full_name || user.email?.split('@')[0],
-                        }),
-                    });
+                if (profile) {
+                    // Cek apakah welcome email sudah pernah dikirim (menggunakan email_logs)
+                    const { data: existingWelcomeLog, error: logError } = await supabase
+                        .from('email_logs')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .eq('email_type', 'welcome_email')
+                        .limit(1);
 
-                    if (response.ok) {
-                        console.log('✅ Welcome email sent successfully');
-                    } else {
-                        console.warn('⚠️ Welcome email not sent (system not configured)');
+                    if (logError) {
+                        console.warn('⚠️ Gagal mengecek email_logs:', logError.message);
                     }
-                } catch (emailError: any) {
-                    console.warn('⚠️ Failed to send welcome email (non-critical):', emailError.message || emailError);
-                    // Don't fail the auth flow if email fails
+
+                    if (existingWelcomeLog && existingWelcomeLog.length > 0) {
+                        console.log('ℹ️ Welcome email sudah pernah dikirim – skip.');
+                    } else {
+                        console.log('📧 Attempting to send one-time welcome email...');
+                        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
+                        const response = await fetch(`${siteUrl}/api/webhooks/email`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'welcome_email',
+                                user_id: user.id,
+                                email: user.email,
+                                name: profile.full_name || user.email?.split('@')[0],
+                            }),
+                        });
+
+                        if (response.ok) {
+                            console.log('✅ Welcome email dikirim (first time)');
+                        } else {
+                            console.warn('⚠️ Welcome email tidak terkirim (system belum dikonfigurasi)');
+                        }
+                    }
                 }
+            } catch (emailError: any) {
+                console.warn('⚠️ Welcome email flow gagal (non-critical):', emailError.message || emailError);
             }
         }
     }

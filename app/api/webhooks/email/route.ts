@@ -189,6 +189,31 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Idempotency guard: untuk welcome_email kirim hanya sekali per user
+        if (payload.type === 'welcome_email') {
+            const { data: existingWelcome, error: existingErr } = await supabaseAdmin!
+                .from('email_logs')
+                .select('id, status, created_at')
+                .eq('user_id', payload.user_id)
+                .eq('email_type', 'welcome_email')
+                .limit(1);
+            if (!existingErr && existingWelcome && existingWelcome.length > 0) {
+                console.log(JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    level: 'info',
+                    message: 'Welcome email already sent – skipping send',
+                    user_id: payload.user_id,
+                    recipient: payload.email
+                }));
+                return NextResponse.json({
+                    success: true,
+                    message: 'Welcome email already sent',
+                    email_type: payload.type,
+                    recipient: payload.email
+                });
+            }
+        }
+
         // Get email template
         const { data: template, error: templateError } = await supabaseAdmin!
             .from('email_templates')
