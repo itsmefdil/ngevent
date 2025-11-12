@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import "@/styles/markdown-editor.css";
 import { Toaster } from "react-hot-toast";
@@ -13,6 +14,12 @@ import NavigationLoader from "@/components/NavigationLoader";
 import CacheInitializer from "@/components/CacheInitializer";
 import { Analytics } from "@vercel/analytics/next"
 import "@/lib/suppress-extension-errors";
+
+const inter = Inter({
+    subsets: ['latin'],
+    display: 'swap',
+    variable: '--font-inter',
+});
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
@@ -49,17 +56,10 @@ export default function RootLayout({
     return (
         <html lang="id" suppressHydrationWarning>
             <head>
-                {/* Load Inter via runtime stylesheet to avoid build-time Google Fonts fetch */}
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-                    rel="stylesheet"
-                />
-                <style>{`html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }`}</style>
+                {/* Font loading is now handled by next/font/google */}
             </head>
             <body
-                className={`flex flex-col min-h-screen`}
+                className={`${inter.variable} flex flex-col min-h-screen font-sans`}
                 suppressHydrationWarning
             >
                 <ReactQueryProvider>

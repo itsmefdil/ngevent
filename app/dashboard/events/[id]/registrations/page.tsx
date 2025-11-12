@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import RegistrationsSkeleton from '@/components/RegistrationsSkeleton';
 import { supabase } from '@/lib/supabase';
@@ -504,9 +505,11 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         {registration.profiles?.avatar_url ? (
-                                                            <img
+                                                            <Image
                                                                 src={registration.profiles.avatar_url}
                                                                 alt={registration.profiles.full_name || 'Avatar'}
+                                                                width={40}
+                                                                height={40}
                                                                 className="w-10 h-10 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
                                                                 referrerPolicy="no-referrer"
                                                             />
