@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import NotificationsCenter from '@/components/NotificationsCenter';
 import UpcomingEventsWidget from '@/components/UpcomingEventsWidget';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
@@ -153,7 +152,7 @@ export default function DashboardPage() {
 
             <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-12 max-w-7xl">
                 <div className="max-w-6xl mx-auto">
-                    {/* Header with Notifications */}
+                    {/* Header */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
@@ -164,7 +163,6 @@ export default function DashboardPage() {
                             </p>
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
-                            <NotificationsCenter userId={user.id} />
                             <Link
                                 href="/profile/edit"
                                 className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -268,20 +266,6 @@ export default function DashboardPage() {
                                 </button>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Recent Notifications */}
-                    <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-6 mb-6 sm:mb-8 border border-transparent dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Recent Notifications</h2>
-                            <Link
-                                href="/dashboard/notifications"
-                                className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                            >
-                                View all
-                            </Link>
-                        </div>
-                        <NotificationsCenter userId={user.id} preview={true} />
                     </div>
 
                     {/* Organizer Dashboard */}

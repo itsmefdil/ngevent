@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
+import NotificationsCenter from "@/components/NotificationsCenter";
 import { supabase } from "@/lib/supabase";
 import { useSupabaseHealth } from '@/hooks/useSupabaseHealth';
 import toast from "react-hot-toast";
@@ -151,6 +152,8 @@ export default function Navbar() {
                             )}
                             <LanguageToggle />
                             <ThemeToggle />
+
+                            {user && <NotificationsCenter userId={user.id} />}
 
                             {loading ? (
                                 // Loading skeleton

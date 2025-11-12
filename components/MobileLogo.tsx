@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LanguageToggle from '@/components/LanguageToggle';
+import NotificationsCenter from '@/components/NotificationsCenter';
 import { useSupabaseHealth } from '@/hooks/useSupabaseHealth';
 import { useLanguage } from "@/lib/language-context";
 import { useAuth } from '@/lib/auth-context';
@@ -79,6 +80,8 @@ export default function MobileLogo() {
                             </div>
                         )}
                         <LanguageToggle />
+
+                        {user && <NotificationsCenter userId={user.id} />}
 
                         {loading ? (
                             // Loading skeleton
