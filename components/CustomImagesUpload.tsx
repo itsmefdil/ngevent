@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
+import { compressImage } from '@/lib/image-compression';
 
 interface CustomImage {
     id?: string;
@@ -46,16 +47,21 @@ export default function CustomImagesUpload({ images, onChange }: CustomImagesUpl
     };
 
     const handleImageFileChange = async (index: number, file: File) => {
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('File size must be less than 5MB');
+        if (file.size > 10 * 1024 * 1024) { // Increased limit for original file before compression
+            toast.error('File size must be less than 10MB');
             return;
         }
 
         setUploading(index);
 
         try {
+            // Compress the image before upload
+            toast.loading('Compressing image...', { id: 'compress' });
+            const compressedFile = await compressImage(file);
+            toast.success('Image compressed successfully!', { id: 'compress' });
+
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', compressedFile);
 
             const response = await fetch('/api/upload', {
                 method: 'POST',
@@ -164,7 +170,7 @@ export default function CustomImagesUpload({ images, onChange }: CustomImagesUpl
                                                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                                                         <span className="font-semibold">Click to upload</span>
                                                     </p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or WEBP (MAX. 5MB)</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or WEBP (MAX. 10MB, auto-compressed to 500KB)</p>
                                                 </div>
                                             )}
                                             <input

@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import MilkdownEditor from '@/components/MilkdownEditor';
-import CustomImagesUpload from '@/components/CustomImagesUpload';
 import CreateEventSkeleton from '@/components/CreateEventSkeleton';
+import CustomImagesUpload from '@/components/CustomImagesUpload';
+import { uploadImageWithCompression } from '@/lib/image-compression';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -105,22 +106,11 @@ export default function CreateEventPage() {
 
         try {
             setUploading(true);
+            toast.loading('Compressing and uploading image...', { id: 'upload' });
 
-            // Use API endpoint to upload (bypasses RLS with service role)
-            const formData = new FormData();
-            formData.append('file', imageFile);
+            const url = await uploadImageWithCompression(imageFile);
 
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Upload failed');
-            }
-
-            const { url } = await response.json();
+            toast.success('Image uploaded successfully!', { id: 'upload' });
             return url;
         } catch (error: any) {
             console.error('Error uploading image:', error);
