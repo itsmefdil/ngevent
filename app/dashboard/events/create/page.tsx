@@ -368,209 +368,215 @@ export default function CreateEventPage() {
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Basic Information Tab */}
                         {activeTab === 'basic' && (
                             <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Event Details</h2>
 
-                                <div className="space-y-4">
-                                    {/* Image Upload */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Event Image
-                                        </label>
-                                        <div className="mt-2">
-                                            {imagePreview ? (
-                                                <div className="relative">
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img
-                                                        src={imagePreview}
-                                                        alt="Preview"
-                                                        className="w-full  object-cover rounded-lg"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setImageFile(null);
-                                                            setImagePreview('');
-                                                        }}
-                                                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
-                                                    >
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary transition-colors">
-                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                        <svg className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                        </svg>
-                                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                            <span className="font-semibold">Click to upload</span> or drag and drop
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or WEBP (MAX. 5MB)</p>
+                                <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
+                                    {/* Left Column - Image Upload */}
+                                    <div className="lg:col-span-2 space-y-1">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Event Image
+                                            </label>
+                                            <div className="mt-2">
+                                                {imagePreview ? (
+                                                    <div className="relative">
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img
+                                                            src={imagePreview}
+                                                            alt="Preview"
+                                                            className="w-full  object-cover rounded-lg"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setImageFile(null);
+                                                                setImagePreview('');
+                                                            }}
+                                                            className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
                                                     </div>
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        accept="image/*"
-                                                        onChange={handleImageChange}
-                                                    />
+                                                ) : (
+                                                    <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary transition-colors">
+                                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                            <svg className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                            </svg>
+                                                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                                <span className="font-semibold">Click to upload</span> or drag and drop
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or WEBP (MAX. 5MB)</p>
+                                                        </div>
+                                                        <input
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                            onChange={handleImageChange}
+                                                        />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column - Form Fields */}
+                                    <div className="lg:col-span-6 space-y-6">
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Event Title <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.title}
+                                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                placeholder="e.g., Workshop Web Development"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Description <span className="text-red-500">*</span>
+                                            </label>
+                                            <MilkdownEditor
+                                                value={formData.description}
+                                                onChange={(value: string) => {
+                                                    console.log('MilkdownEditor onChange called with:', value);
+                                                    setFormData((prev) => ({ ...prev, description: value }));
+                                                }}
+                                                placeholder="Describe your event using markdown..."
+                                                height="300px"
+                                            />
+                                            <p className="mt-1 text-sm ">Markdown format support</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Start Date & Time <span className="text-red-500">*</span>
                                                 </label>
-                                            )}
+                                                <input
+                                                    type="datetime-local"
+                                                    required
+                                                    value={formData.start_date}
+                                                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    End Date & Time <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="datetime-local"
+                                                    required
+                                                    value={formData.end_date}
+                                                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Event Title <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                            placeholder="e.g., Workshop Web Development"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Description <span className="text-red-500">*</span>
-                                        </label>
-                                        <MilkdownEditor
-                                            value={formData.description}
-                                            onChange={(value: string) => {
-                                                console.log('MilkdownEditor onChange called with:', value);
-                                                setFormData((prev) => ({ ...prev, description: value }));
-                                            }}
-                                            placeholder="Describe your event using markdown..."
-                                            height="300px"
-                                        />
-                                        <p className="mt-1 text-sm ">Markdown format support</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Start Date & Time <span className="text-red-500">*</span>
+                                                Location
                                             </label>
                                             <input
-                                                type="datetime-local"
-                                                required
-                                                value={formData.start_date}
-                                                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                                type="text"
+                                                value={formData.location}
+                                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                placeholder="e.g., Zoom Meeting or Physical Address"
                                             />
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                End Date & Time <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="datetime-local"
-                                                required
-                                                value={formData.end_date}
-                                                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                            />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Category
+                                                </label>
+                                                <select
+                                                    value={formData.category}
+                                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                >
+                                                    <option value="">Select category...</option>
+                                                    <option value="Tech">💻 Tech</option>
+                                                    <option value="Food & Drink">🍔 Food & Drink</option>
+                                                    <option value="AI">🤖 AI</option>
+                                                    <option value="Arts & Culture">🎨 Arts & Culture</option>
+                                                    <option value="Climate">🌱 Climate</option>
+                                                    <option value="Fitness">💪 Fitness</option>
+                                                    <option value="Wellness">🧘 Wellness</option>
+                                                    <option value="Crypto">₿ Crypto</option>
+                                                    <option value="Business">💼 Business</option>
+                                                    <option value="Education">📚 Education</option>
+                                                    <option value="Music">🎵 Music</option>
+                                                    <option value="Gaming">🎮 Gaming</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Capacity
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.capacity}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                    placeholder="Maximum participants"
+                                                    min="1"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Location
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.location}
-                                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                            placeholder="e.g., Zoom Meeting or Physical Address"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Category
+                                                Registration Fee (IDR)
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                    Rp
+                                                </span>
+                                                <input
+                                                    type="number"
+                                                    value={formData.registration_fee}
+                                                    onChange={(e) => setFormData({ ...formData, registration_fee: e.target.value })}
+                                                    className="w-full pl-12 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                    placeholder="0 (Free event)"
+                                                    min="0"
+                                                    step="1000"
+                                                />
+                                            </div>
+                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                Leave as 0 for free events. If you set a fee, make sure to add a payment proof upload field below.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Status <span className="text-red-500">*</span>
                                             </label>
                                             <select
-                                                value={formData.category}
-                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                value={formData.status}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
                                             >
-                                                <option value="">Select category...</option>
-                                                <option value="Tech">💻 Tech</option>
-                                                <option value="Food & Drink">🍔 Food & Drink</option>
-                                                <option value="AI">🤖 AI</option>
-                                                <option value="Arts & Culture">🎨 Arts & Culture</option>
-                                                <option value="Climate">🌱 Climate</option>
-                                                <option value="Fitness">💪 Fitness</option>
-                                                <option value="Wellness">🧘 Wellness</option>
-                                                <option value="Crypto">₿ Crypto</option>
-                                                <option value="Business">💼 Business</option>
-                                                <option value="Education">📚 Education</option>
-                                                <option value="Music">🎵 Music</option>
-                                                <option value="Gaming">🎮 Gaming</option>
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
                                             </select>
                                         </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Capacity
-                                            </label>
-                                            <input
-                                                type="number"
-                                                value={formData.capacity}
-                                                onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                                placeholder="Maximum participants"
-                                                min="1"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Registration Fee (IDR)
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                                                Rp
-                                            </span>
-                                            <input
-                                                type="number"
-                                                value={formData.registration_fee}
-                                                onChange={(e) => setFormData({ ...formData, registration_fee: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                                placeholder="0 (Free event)"
-                                                min="0"
-                                                step="1000"
-                                            />
-                                        </div>
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            Leave as 0 for free events. If you set a fee, make sure to add a payment proof upload field below.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Status <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={formData.status}
-                                            onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                        >
-                                            <option value="draft">Draft</option>
-                                            <option value="published">Published</option>
-                                        </select>
                                     </div>
                                 </div>
                             </div>

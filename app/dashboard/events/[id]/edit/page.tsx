@@ -596,9 +596,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                             <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Event Details</h2>
 
-                                <div className="space-y-4">
-                                    {/* Image Upload */}
-                                    <div>
+                                <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
+                                    {/* Left Column - Image Upload */}
+                                    <div className="lg:col-span-2 space-y-4">
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Event Image
                                         </label>
@@ -647,155 +647,159 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Event Title <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                            placeholder="e.g., Workshop Web Development"
-                                        />
-                                    </div>
+                                    {/* Right Column - Form Fields */}
+                                    <div className="lg:col-span-6 space-y-4">
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Description <span className="text-red-500">*</span>
-                                        </label>
-                                        <MilkdownEditor
-                                            value={formData.description}
-                                            onChange={(value: string) => {
-                                                console.log('MilkdownEditor onChange called with:', value);
-                                                setFormData((prev) => ({ ...prev, description: value }));
-                                            }}
-                                            placeholder="Describe your event using markdown..."
-                                            height="300px"
-                                        />
-                                        <p className="mt-1 text-sm ">Markdown format support</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Start Date & Time <span className="text-red-500">*</span>
+                                                Event Title <span className="text-red-500">*</span>
                                             </label>
                                             <input
-                                                type="datetime-local"
+                                                type="text"
                                                 required
-                                                value={formData.start_date}
-                                                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                                value={formData.title}
+                                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                placeholder="e.g., Workshop Web Development"
                                             />
                                         </div>
 
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                End Date & Time <span className="text-red-500">*</span>
+                                                Description <span className="text-red-500">*</span>
                                             </label>
-                                            <input
-                                                type="datetime-local"
-                                                required
-                                                value={formData.end_date}
-                                                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                            <MilkdownEditor
+                                                value={formData.description}
+                                                onChange={(value: string) => {
+                                                    console.log('MilkdownEditor onChange called with:', value);
+                                                    setFormData((prev) => ({ ...prev, description: value }));
+                                                }}
+                                                placeholder="Describe your event using markdown..."
+                                                height="300px"
                                             />
+                                            <p className="mt-1 text-sm ">Markdown format support</p>
                                         </div>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Location
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.location}
-                                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                            placeholder="e.g., Zoom Meeting or Physical Address"
-                                        />
-                                    </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Start Date & Time <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="datetime-local"
+                                                    required
+                                                    value={formData.start_date}
+                                                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                />
+                                            </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    End Date & Time <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="datetime-local"
+                                                    required
+                                                    value={formData.end_date}
+                                                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                />
+                                            </div>
+                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Category
+                                                Location
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.location}
+                                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                placeholder="e.g., Zoom Meeting or Physical Address"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Category
+                                                </label>
+                                                <select
+                                                    value={formData.category}
+                                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                >
+                                                    <option value="">Select category...</option>
+                                                    <option value="Tech">💻 Tech</option>
+                                                    <option value="Food & Drink">🍔 Food & Drink</option>
+                                                    <option value="AI">🤖 AI</option>
+                                                    <option value="Arts & Culture">🎨 Arts & Culture</option>
+                                                    <option value="Climate">🌱 Climate</option>
+                                                    <option value="Fitness">💪 Fitness</option>
+                                                    <option value="Wellness">🧘 Wellness</option>
+                                                    <option value="Crypto">₿ Crypto</option>
+                                                    <option value="Business">💼 Business</option>
+                                                    <option value="Education">📚 Education</option>
+                                                    <option value="Music">🎵 Music</option>
+                                                    <option value="Gaming">🎮 Gaming</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Capacity
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.capacity}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                    placeholder="Maximum participants"
+                                                    min="1"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Registration Fee (IDR)
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                    Rp
+                                                </span>
+                                                <input
+                                                    type="number"
+                                                    value={formData.registration_fee}
+                                                    onChange={(e) => setFormData({ ...formData, registration_fee: e.target.value })}
+                                                    className="w-full pl-12 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
+                                                    placeholder="0 (Free event)"
+                                                    min="0"
+                                                    step="1000"
+                                                />
+                                            </div>
+                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                Leave as 0 for free events. If you set a fee, make sure to add a payment proof upload field below.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Status <span className="text-red-500">*</span>
                                             </label>
                                             <select
-                                                value={formData.category}
-                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                value={formData.status}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
                                             >
-                                                <option value="">Select category...</option>
-                                                <option value="Tech">💻 Tech</option>
-                                                <option value="Food & Drink">🍔 Food & Drink</option>
-                                                <option value="AI">🤖 AI</option>
-                                                <option value="Arts & Culture">🎨 Arts & Culture</option>
-                                                <option value="Climate">🌱 Climate</option>
-                                                <option value="Fitness">💪 Fitness</option>
-                                                <option value="Wellness">🧘 Wellness</option>
-                                                <option value="Crypto">₿ Crypto</option>
-                                                <option value="Business">💼 Business</option>
-                                                <option value="Education">📚 Education</option>
-                                                <option value="Music">🎵 Music</option>
-                                                <option value="Gaming">🎮 Gaming</option>
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
+                                                <option value="cancelled">Cancelled</option>
+                                                <option value="completed">Completed</option>
                                             </select>
                                         </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Capacity
-                                            </label>
-                                            <input
-                                                type="number"
-                                                value={formData.capacity}
-                                                onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                                placeholder="Maximum participants"
-                                                min="1"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Registration Fee (IDR)
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                                                Rp
-                                            </span>
-                                            <input
-                                                type="number"
-                                                value={formData.registration_fee}
-                                                onChange={(e) => setFormData({ ...formData, registration_fee: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                                placeholder="0 (Free event)"
-                                                min="0"
-                                                step="1000"
-                                            />
-                                        </div>
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            Leave as 0 for free events. If you set a fee, make sure to add a payment proof upload field below.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Status <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={formData.status}
-                                            onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-secondary text-gray-900 dark:text-white"
-                                        >
-                                            <option value="draft">Draft</option>
-                                            <option value="published">Published</option>
-                                            <option value="cancelled">Cancelled</option>
-                                            <option value="completed">Completed</option>
-                                        </select>
                                     </div>
                                 </div>
                             </div>
