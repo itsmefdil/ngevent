@@ -235,6 +235,18 @@ export default function Navbar() {
                                                             {t('nav.dashboard')}
                                                         </div>
                                                     </Link>
+                                                    <Link
+                                                        href="/about"
+                                                        onClick={() => setShowDropdown(false)}
+                                                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-secondary"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            About
+                                                        </div>
+                                                    </Link>
                                                     <button
                                                         onClick={handleSignOut}
                                                         className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-secondary"
