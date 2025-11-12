@@ -370,7 +370,7 @@
   .animate-skeleton {
     background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
     background-size: 200px 100%;
-    animation: skeleton-loading 1.2s ease-in-out infinite;
+    animation: skeleton-loading 0.8s ease-in-out infinite;
   }
 
   .dark .animate-skeleton {
@@ -391,7 +391,7 @@
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.2s ease-out;
   }
 
   /* Smooth Page Transition */
