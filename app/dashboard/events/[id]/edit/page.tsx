@@ -1055,6 +1055,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                 <CustomImagesUpload
                                     images={customImages}
                                     onChange={setCustomImages}
+                                    eventId={eventId}
                                 />
                             </div>
                         )}

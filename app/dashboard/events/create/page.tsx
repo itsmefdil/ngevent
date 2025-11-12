@@ -830,6 +830,7 @@ export default function CreateEventPage() {
                                 <CustomImagesUpload
                                     images={customImages}
                                     onChange={setCustomImages}
+                                    eventId={undefined}
                                 />
                             </div>
                         )}

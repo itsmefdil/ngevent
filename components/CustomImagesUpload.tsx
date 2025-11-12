@@ -16,9 +16,10 @@ interface CustomImage {
 interface CustomImagesUploadProps {
     images: CustomImage[];
     onChange: (images: CustomImage[]) => void;
+    eventId?: string;
 }
 
-export default function CustomImagesUpload({ images, onChange }: CustomImagesUploadProps) {
+export default function CustomImagesUpload({ images, onChange, eventId }: CustomImagesUploadProps) {
     const [uploading, setUploading] = useState<number | null>(null);
 
     const addNewImage = () => {
@@ -44,6 +45,45 @@ export default function CustomImagesUpload({ images, onChange }: CustomImagesUpl
     const removeImage = (index: number) => {
         const updatedImages = images.filter((_, i) => i !== index);
         onChange(updatedImages);
+    };
+
+    const checkAndDeleteOldImage = async (index: number, newUrl: string) => {
+        if (!eventId) return;
+
+        try {
+            // Get stored images from localStorage
+            const storedImagesKey = `event_custom_images_${eventId}`;
+            const storedImagesStr = localStorage.getItem(storedImagesKey);
+
+            if (!storedImagesStr) return;
+
+            const storedImages = JSON.parse(storedImagesStr);
+
+            // Check if there's an old image at this index
+            if (storedImages[index] && storedImages[index].url && storedImages[index].url !== newUrl) {
+                const oldUrl = storedImages[index].url;
+
+                // Extract path from Supabase URL
+                // URL format: https://[project].supabase.co/storage/v1/object/public/events/[path]
+                const urlParts = oldUrl.split('/storage/v1/object/public/events/');
+                if (urlParts.length === 2) {
+                    const path = urlParts[1];
+
+                    // Delete old image from Supabase storage
+                    const response = await fetch(`/api/upload?path=${encodeURIComponent(path)}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!response.ok) {
+                        console.error('Failed to delete old image:', await response.text());
+                    } else {
+                        console.log('Old image deleted successfully:', path);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error checking/deleting old image:', error);
+        }
     };
 
     const handleImageFileChange = async (index: number, file: File) => {
@@ -74,6 +114,8 @@ export default function CustomImagesUpload({ images, onChange }: CustomImagesUpl
 
             const data = await response.json();
             updateImage(index, 'url', data.url);
+            // Check and delete old image if different
+            await checkAndDeleteOldImage(index, data.url);
             // Don't store the file object to avoid exceeding body size limit
             toast.success('Image uploaded successfully!');
         } catch (error) {

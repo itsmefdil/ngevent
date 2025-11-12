@@ -42,6 +42,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     const [isCapacityReached, setIsCapacityReached] = useState(false);
     const [showRegistrationModal, setShowRegistrationModal] = useState(false);
     const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+    const [imageModal, setImageModal] = useState<{ src: string; alt: string } | null>(null);
 
     useEffect(() => {
         params.then((resolvedParams) => {
@@ -551,12 +552,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="lg:col-span-3 space-y-4 sm:space-y-6">
                         {/* Event Image */}
                         {event.image_url && (
-                            <div className="w-full rounded-xl overflow-hidden shadow-lg">
+                            <div className="w-full rounded-xl overflow-hidden shadow-lg cursor-pointer" onClick={() => setImageModal({ src: event.image_url!, alt: event.title })}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={event.image_url}
                                     alt={event.title}
-                                    className="w-full h-auto object-cover"
+                                    className="w-full h-auto object-cover hover:scale-105 transition-transform duration-200"
                                 />
                             </div>
                         )}
@@ -573,7 +574,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                         <img
                                             src={organizer.avatar_url}
                                             alt={organizer.full_name || organizer.email}
-                                            className="w-12 h-12 rounded-full object-cover flex-shrink-0 ring-2 ring-primary-200 dark:ring-primary-800"
+                                            className="w-12 h-12 rounded-full object-cover flex-shrink-0 ring-2 ring-primary-200 dark:ring-primary-800 cursor-pointer hover:ring-primary-300 dark:hover:ring-primary-700 transition-all duration-200"
+                                            onClick={() => setImageModal({ src: organizer.avatar_url!, alt: organizer.full_name || organizer.email })}
                                         />
                                     ) : (
                                         <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-purple-600 dark:from-primary-500 dark:to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ring-2 ring-primary-200 dark:ring-primary-800">
@@ -608,7 +610,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                                 <img
                                                     src={speaker.photo_url}
                                                     alt={speaker.name}
-                                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer hover:scale-110 transition-transform duration-200"
+                                                    onClick={() => setImageModal({ src: speaker.photo_url!, alt: speaker.name })}
                                                 />
                                             ) : (
                                                 <div className="w-10 h-10 bg-primary-600 dark:bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
@@ -951,8 +954,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             onClick={() => setShowRegistrationModal(true)}
                             disabled={Boolean(!isProfileComplete || isRegistrationCancelled || (event?.capacity && event.capacity > 0 && (isCapacityReached ?? false)))}
                             className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${(!isProfileComplete || isRegistrationCancelled || (event?.capacity && event.capacity > 0 && (isCapacityReached ?? false)))
-                                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                                    : 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 cursor-pointer shadow-lg'
+                                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                : 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 cursor-pointer shadow-lg'
                                 }`}
                         >
                             {isRegistrationCancelled
@@ -1254,6 +1257,35 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                     {language === 'id' ? 'Ya, Batalkan' : 'Yes, Cancel'}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Modal */}
+            {imageModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" onClick={() => setImageModal(null)}>
+                    <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setImageModal(null)}
+                            className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all duration-200"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Image */}
+                        <img
+                            src={imageModal.src}
+                            alt={imageModal.alt}
+                            className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+                        />
+
+                        {/* Image Caption */}
+                        <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-lg">
+                            <p className="text-sm font-medium">{imageModal.alt}</p>
                         </div>
                     </div>
                 </div>
