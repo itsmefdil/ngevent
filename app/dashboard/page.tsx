@@ -270,6 +270,20 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
+                    {/* Recent Notifications */}
+                    <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-6 mb-6 sm:mb-8 border border-transparent dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Recent Notifications</h2>
+                            <Link
+                                href="/dashboard/notifications"
+                                className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                            >
+                                View all
+                            </Link>
+                        </div>
+                        <NotificationsCenter userId={user.id} preview={true} />
+                    </div>
+
                     {/* Organizer Dashboard */}
                     {effectiveRole === 'organizer' && (
                         <div>

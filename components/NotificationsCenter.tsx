@@ -17,7 +17,7 @@ interface Notification {
     event_title?: string;
 }
 
-export default function NotificationsCenter({ userId }: { userId: string }) {
+export default function NotificationsCenter({ userId, preview = false }: { userId: string, preview?: boolean }) {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -180,6 +180,89 @@ export default function NotificationsCenter({ userId }: { userId: string }) {
         }
     };
 
+    if (preview) {
+        // Preview mode - show recent notifications list
+        return (
+            <div className="space-y-3">
+                {loading ? (
+                    <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex gap-3 animate-pulse">
+                                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : notifications.length === 0 ? (
+                    <div className="text-center py-6">
+                        <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">No recent notifications</p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {notifications.slice(0, 5).map((notification) => {
+                            const handleClick = () => {
+                                if (!notification.read) {
+                                    markAsRead(notification.id);
+                                }
+                            };
+
+                            const content = (
+                                <div className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                                    {getNotificationIcon(notification.type)}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="flex-1">
+                                                <h4 className="font-medium text-gray-900 dark:text-white text-sm">
+                                                    {notification.title}
+                                                </h4>
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                                    {notification.message}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                                    {format(new Date(notification.created_at), 'dd MMM, HH:mm', { locale: id })}
+                                                </p>
+                                            </div>
+                                            {!notification.read && (
+                                                <span className="h-2 w-2 bg-primary-600 rounded-full flex-shrink-0 mt-1"></span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+
+                            if (notification.event_id) {
+                                return (
+                                    <Link
+                                        key={notification.id}
+                                        href={`/events/${notification.event_id}`}
+                                        onClick={handleClick}
+                                    >
+                                        {content}
+                                    </Link>
+                                );
+                            }
+
+                            return (
+                                <div
+                                    key={notification.id}
+                                    onClick={handleClick}
+                                >
+                                    {content}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="relative">
             {/* Notification Bell Button */}
@@ -310,9 +393,13 @@ export default function NotificationsCenter({ userId }: { userId: string }) {
                         {/* Footer */}
                         {notifications.length > 0 && (
                             <div className="p-3 border-t border-gray-200 dark:border-gray-700 text-center">
-                                <button className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                                <Link
+                                    href="/dashboard/notifications"
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                                >
                                     View all notifications
-                                </button>
+                                </Link>
                             </div>
                         )}
                     </div>
