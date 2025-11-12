@@ -935,6 +935,50 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
             </div>
 
+            {/* Floating Register Button for Mobile */}
+            <div className="lg:hidden fixed bottom-20 left-4 right-4 z-40">
+                {user ? (
+                    <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4">
+                        {!isProfileComplete && (
+                            <button
+                                onClick={() => router.push('/profile')}
+                                className="w-full mb-3 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
+                            >
+                                {t('event.completeProfileNow')}
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setShowRegistrationModal(true)}
+                            disabled={Boolean(!isProfileComplete || isRegistrationCancelled || (event?.capacity && event.capacity > 0 && (isCapacityReached ?? false)))}
+                            className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${
+                                (!isProfileComplete || isRegistrationCancelled || (event?.capacity && event.capacity > 0 && (isCapacityReached ?? false)))
+                                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                    : 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 cursor-pointer shadow-lg'
+                            }`}
+                        >
+                            {isRegistrationCancelled
+                                ? (language === 'id' ? 'Pendaftaran Ditutup' : 'Registration Closed')
+                                : (event?.capacity && event.capacity > 0 && isCapacityReached)
+                                    ? (language === 'id' ? 'Event Penuh' : 'Event Full')
+                                    : (isProfileComplete ? t('event.requestToJoin') : t('event.completeProfileFirst'))
+                            }
+                        </button>
+                    </div>
+                ) : (
+                    <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4">
+                        <p className="text-gray-600 dark:text-gray-400 text-center mb-3 text-sm">
+                            {t('event.loginToRegister')}
+                        </p>
+                        <Link
+                            href="/auth/login"
+                            className="block w-full bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 active:bg-primary-800 transition-colors text-center shadow-lg"
+                        >
+                            {t('auth.login')}
+                        </Link>
+                    </div>
+                )}
+            </div>
+
             {/* Registration Modal */}
             {showRegistrationModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowRegistrationModal(false)}>
