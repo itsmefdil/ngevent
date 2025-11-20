@@ -79,7 +79,8 @@ export default function AboutPage() {
                                     </ul>
                                     <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                                         <p className="text-blue-800 dark:text-blue-200">
-                                            <strong>Kontak:</strong> support@ngevent.com
+                                            <strong>Kontak:</strong> devopsjogja@gmail.com
+                                            <strong>Telegram:</strong> t.me/devopsjogja
                                         </p>
                                     </div>
                                 </section>

@@ -374,7 +374,7 @@ export async function POST(request: NextRequest) {
                     'Authorization': `Bearer ${actualResendKey}`
                 },
                 body: JSON.stringify({
-                    from: 'NGEvent <ngevent@notifications.devopsjogja.com>', // Change to your domain after verification
+                    from: 'Ngevent by DevOps Jogja <no-reply@notifications.devopsjogja.com>', // Change to your domain after verification
                     to: payload.email,
                     subject: subject,
                     html: htmlBody,

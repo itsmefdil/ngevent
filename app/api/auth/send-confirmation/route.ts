@@ -110,12 +110,12 @@ export async function POST(req: NextRequest) {
         }
 
         // Compose email
-        const subject = 'Verifikasi akun Anda di NGEvent';
+        const subject = 'Verifikasi akun Anda di Ngevent by DevOps Jogja';
         const displayName = full_name || email.split('@')[0];
         const html = `
       <div style="font-family:Arial,Helvetica,sans-serif; line-height:1.6; color:#111827;">
         <h2 style="margin:0 0 16px;">Halo ${displayName},</h2>
-        <p>Terima kasih telah mendaftar di NGEvent. Klik tombol di bawah ini untuk verifikasi akun Anda:</p>
+        <p>Terima kasih telah mendaftar di Ngevent by DevOps Jogja. Klik tombol di bawah ini untuk verifikasi akun Anda:</p>
         <p style="margin:24px 0;">
           <a href="${verifyUrl}"
              style="background:#2563eb;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;display:inline-block">
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
                 'Authorization': `Bearer ${resendKey}`
             },
             body: JSON.stringify({
-                from: 'NGEvent <ngevent@notifications.devopsjogja.com>',
+                from: 'Ngevent by DevOps Jogja <no-reply@notifications.devopsjogja.com>',
                 to: email,
                 subject,
                 html,

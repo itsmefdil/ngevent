@@ -23,9 +23,9 @@ const inter = Inter({
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
-    title: "Ngevent - Platform Manajemen Event Online Gratis",
+    title: "Ngevent - By DevOps Jogja",
     description: "Platform manajemen event online yang memudahkan penyelenggara dan peserta dalam mengelola event",
-    keywords: ["event", "manajemen event", "pendaftaran event", "online event"],
+    keywords: ["event", "manajemen event", "pendaftaran event", "online event", "devops jogja"],
     icons: {
         icon: [
             {
