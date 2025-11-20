@@ -993,57 +993,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                                     />
                                                 </div>
 
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                        Bio
-                                                    </label>
-                                                    <textarea
-                                                        value={speaker.bio}
-                                                        onChange={(e) => updateSpeaker(index, 'bio', e.target.value)}
-                                                        rows={3}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-primary text-gray-900 dark:text-white"
-                                                        placeholder="Brief bio about the speaker..."
-                                                    />
-                                                </div>
 
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                        LinkedIn URL
-                                                    </label>
-                                                    <input
-                                                        type="url"
-                                                        value={speaker.linkedin_url}
-                                                        onChange={(e) => updateSpeaker(index, 'linkedin_url', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-primary text-gray-900 dark:text-white"
-                                                        placeholder="https://linkedin.com/in/..."
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                        Twitter/X URL
-                                                    </label>
-                                                    <input
-                                                        type="url"
-                                                        value={speaker.twitter_url}
-                                                        onChange={(e) => updateSpeaker(index, 'twitter_url', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-primary text-gray-900 dark:text-white"
-                                                        placeholder="https://twitter.com/..."
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                        Website URL
-                                                    </label>
-                                                    <input
-                                                        type="url"
-                                                        value={speaker.website_url}
-                                                        onChange={(e) => updateSpeaker(index, 'website_url', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 bg-white dark:bg-dark-primary text-gray-900 dark:text-white"
-                                                        placeholder="https://..."
-                                                    />
-                                                </div>
                                             </div>
                                         </div>
                                     ))}

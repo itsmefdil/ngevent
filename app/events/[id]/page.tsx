@@ -550,7 +550,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-9 gap-4 sm:gap-6 lg:gap-8">
                     {/* Left Column - Image, Speakers, Organizer, Custom Images */}
                     <div className="lg:col-span-3 space-y-4 sm:space-y-6">
                         {/* Event Image */}
@@ -644,7 +644,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                     </div>
 
-                    {/* Center Column - Title, Info, Description */}
+                    {/* Center Column - Title, Info, Registration, Description */}
                     <div className="lg:col-span-6 space-y-4 sm:space-y-6">
                         {/* Event Title */}
                         <div>
@@ -738,168 +738,158 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    {/* Right Column - Registration Form */}
-                    <div className="lg:col-span-3">
-                        <div className="lg:sticky lg:top-24">
+                        {/* Registration Section */}
+                        <div className="bg-white dark:bg-dark-card rounded-xl shadow-md dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700 mt-6">
+                            <div className="mb-4 sm:mb-6">
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                                    {language === 'id' ? 'Pendaftaran Event' : 'Event Registration'}
+                                </h3>
+
+                                {/* Registration Fee */}
+                                {event.registration_fee && event.registration_fee > 0 ? (
+                                    <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">{t('event.registrationFee')}</div>
+                                        <div className="text-xl sm:text-2xl font-bold text-primary-600 dark:text-primary-400">
+                                            Rp {event.registration_fee.toLocaleString('id-ID')}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                                        <div className="text-base sm:text-lg font-bold text-green-600 dark:text-green-400">
+                                            {t('event.freeEvent')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             {isRegistrationCancelled ? (
-                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
-                                    <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
-                                        {/* Cancelled Icon */}
-                                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </div>
+                                <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+                                    {/* Cancelled Icon */}
+                                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </div>
 
-                                        <h3 className="text-xl font-bold text-red-900 dark:text-red-300 mb-2">
-                                            {language === 'id' ? 'Pendaftaran Dibatalkan' : 'Registration Cancelled'}
-                                        </h3>
-                                        <p className="text-red-700 dark:text-red-400 text-sm mb-4">
-                                            {language === 'id'
-                                                ? 'Pendaftaran Anda telah dibatalkan. Untuk mendaftar kembali, silakan hubungi penyelenggara event.'
-                                                : 'Your registration has been cancelled. To register again, please contact the event organizer.'
-                                            }
-                                        </p>
+                                    <h4 className="text-xl font-bold text-red-900 dark:text-red-300 mb-2">
+                                        {language === 'id' ? 'Pendaftaran Dibatalkan' : 'Registration Cancelled'}
+                                    </h4>
+                                    <p className="text-red-700 dark:text-red-400 text-sm mb-4">
+                                        {language === 'id'
+                                            ? 'Pendaftaran Anda telah dibatalkan. Untuk mendaftar kembali, silakan hubungi penyelenggara event.'
+                                            : 'Your registration has been cancelled. To register again, please contact the event organizer.'
+                                        }
+                                    </p>
 
-                                        {/* Contact Organizer Button */}
-                                        <button
-                                            onClick={() => {
-                                                if (organizer?.phone) {
-                                                    // Format phone number for WhatsApp (remove + and spaces, add Indonesian country code if needed)
-                                                    let phoneNumber = organizer.phone.replace(/[\+\s-]/g, '');
-                                                    // Add Indonesian country code (+62) if number starts with 0
-                                                    if (phoneNumber.startsWith('0')) {
-                                                        phoneNumber = '62' + phoneNumber.substring(1);
-                                                    }
-                                                    const message = encodeURIComponent(`Halo ${organizer.full_name},\n\nSaya ingin mendaftar ulang untuk event "${event?.title}".\n\nTerima kasih.`);
-                                                    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
-                                                } else {
-                                                    toast.error(language === 'id' ? 'Nomor WhatsApp penyelenggara tidak tersedia' : 'Organizer WhatsApp number not available');
+                                    {/* Contact Organizer Button */}
+                                    <button
+                                        onClick={() => {
+                                            if (organizer?.phone) {
+                                                // Format phone number for WhatsApp (remove + and spaces, add Indonesian country code if needed)
+                                                let phoneNumber = organizer.phone.replace(/[\+\s-]/g, '');
+                                                // Add Indonesian country code (+62) if number starts with 0
+                                                if (phoneNumber.startsWith('0')) {
+                                                    phoneNumber = '62' + phoneNumber.substring(1);
                                                 }
-                                            }}
-                                            className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                                        >
-                                            {language === 'id' ? 'Hubungi via WhatsApp' : 'Contact via WhatsApp'}
-                                        </button>
+                                                const message = encodeURIComponent(`Halo ${organizer.full_name},\n\nSaya ingin mendaftar ulang untuk event "${event?.title}".\n\nTerima kasih.`);
+                                                window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                                            } else {
+                                                toast.error(language === 'id' ? 'Nomor WhatsApp penyelenggara tidak tersedia' : 'Organizer WhatsApp number not available');
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                    >
+                                        {language === 'id' ? 'Hubungi via WhatsApp' : 'Contact via WhatsApp'}
+                                    </button>
 
-                                        {/* Status Badge */}
-                                        <div className="mt-4">
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium">
-                                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                                {language === 'id' ? 'Dibatalkan' : 'Cancelled'}
-                                            </span>
-                                        </div>
+                                    {/* Status Badge */}
+                                    <div className="mt-4">
+                                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            {language === 'id' ? 'Dibatalkan' : 'Cancelled'}
+                                        </span>
                                     </div>
                                 </div>
                             ) : isRegistered ? (
-                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
-                                    <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-2xl p-6 text-center">
-                                        {/* Simple Success Icon */}
-                                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-
-                                        <h3 className="text-xl font-bold text-green-900 dark:text-green-300 mb-2">
-                                            {t('event.alreadyRegistered')}
-                                        </h3>
-                                        <p className="text-green-700 dark:text-green-400 text-sm mb-4">
-                                            {t('event.registrationSuccess')}
-                                        </p>
-
-                                        {/* Simple Status Badge */}
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium mb-4">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            {language === 'id' ? 'Pendaftaran Aktif' : 'Registration Active'}
-                                        </div>
-
-                                        {/* Simple Action Button */}
-                                        <button
-                                            onClick={() => setShowCancelConfirmation(true)}
-                                            className="w-full px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
-                                        >
-                                            {language === 'id' ? 'Batalkan Pendaftaran' : 'Cancel Registration'}
-                                        </button>
-
-                                        {/* Simple Email Notice */}
-                                        <div className="mt-4 text-center">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {language === 'id'
-                                                    ? 'Cek email untuk konfirmasi pendaftaran'
-                                                    : 'Check email for registration confirmation'
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : isEventPast ? (
-                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
-                                    <div className="bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center">
-                                        <svg className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-2xl p-6 text-center">
+                                    {/* Simple Success Icon */}
+                                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                            {language === 'id' ? 'Event Telah Berakhir' : 'Event Ended'}
-                                        </h3>
-                                        <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                    </div>
+
+                                    <h4 className="text-xl font-bold text-green-900 dark:text-green-300 mb-2">
+                                        {t('event.alreadyRegistered')}
+                                    </h4>
+                                    <p className="text-green-700 dark:text-green-400 text-sm mb-4">
+                                        {t('event.registrationSuccess')}
+                                    </p>
+
+                                    {/* Simple Status Badge */}
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium mb-4">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        {language === 'id' ? 'Pendaftaran Aktif' : 'Registration Active'}
+                                    </div>
+
+                                    {/* Simple Action Button */}
+                                    <button
+                                        onClick={() => setShowCancelConfirmation(true)}
+                                        className="w-full px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
+                                    >
+                                        {language === 'id' ? 'Batalkan Pendaftaran' : 'Cancel Registration'}
+                                    </button>
+
+                                    {/* Simple Email Notice */}
+                                    <div className="mt-4 text-center">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
                                             {language === 'id'
-                                                ? 'Event ini sudah selesai dilaksanakan. Sampai jumpa di event selanjutnya!'
-                                                : 'This event has already taken place. See you at the next event!'
+                                                ? 'Cek email untuk konfirmasi pendaftaran'
+                                                : 'Check email for registration confirmation'
                                             }
                                         </p>
                                     </div>
                                 </div>
+                            ) : isEventPast ? (
+                                <div className="bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center">
+                                    <svg className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                        {language === 'id' ? 'Event Telah Berakhir' : 'Event Ended'}
+                                    </h4>
+                                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                        {language === 'id'
+                                            ? 'Event ini sudah selesai dilaksanakan. Sampai jumpa di event selanjutnya!'
+                                            : 'This event has already taken place. See you at the next event!'
+                                        }
+                                    </p>
+                                </div>
                             ) : (event?.capacity && event.capacity > 0 && isCapacityReached) ? (
-                                <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg dark:shadow-xl p-6 border border-transparent dark:border-gray-700">
-                                    <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
-                                        <svg
-                                            className="w-16 h-16 text-red-600 dark:text-red-400 mx-auto mb-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M4.93 4.93l14.14 14.14M12 5a7 7 0 100 14 7 7 0 000-14z" />
-                                        </svg>
-                                        <h3 className="text-xl font-bold text-red-900 dark:text-red-300 mb-2">
-                                            {t('event.registrationClosed') || 'Pendaftaran sudah ditutup'}
-                                        </h3>
-                                        <p className="text-red-700 dark:text-red-400 text-sm">
-                                            {t('event.capacityReached') || 'Kapasitas peserta telah terpenuhi.'}
+                                <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+                                    <svg
+                                        className="w-16 h-16 text-red-600 dark:text-red-400 mx-auto mb-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <h4 className="text-xl font-bold text-red-900 dark:text-red-300 mb-2">
+                                        {t('event.registrationClosed') || 'Pendaftaran sudah ditutup'}
+                                    </h4>
+                                    <p className="text-red-700 dark:text-red-400 text-sm">
+                                        {t('event.capacityReached') || 'Kapasitas peserta telah terpenuhi.'}
+                                    </p>
+                                    {typeof event.capacity === 'number' && registrationCount !== null && (
+                                        <p className="mt-2 text-xs text-red-800 dark:text-red-300">
+                                            {registrationCount} / {event.capacity}
                                         </p>
-                                        {typeof event.capacity === 'number' && registrationCount !== null && (
-                                            <p className="mt-2 text-xs text-red-800 dark:text-red-300">
-                                                {registrationCount} / {event.capacity}
-                                            </p>
-                                        )}
-                                    </div>
+                                    )}
                                 </div>
                             ) : (
-                                <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl shadow-lg dark:shadow-xl p-4 sm:p-6 border border-transparent dark:border-gray-700">
-                                    {/* Registration Header */}
-                                    <div className="mb-4 sm:mb-6">
-                                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Registration</h3>
-
-                                        {/* Registration Fee */}
-                                        {event.registration_fee && event.registration_fee > 0 ? (
-                                            <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
-                                                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">{t('event.registrationFee')}</div>
-                                                <div className="text-xl sm:text-2xl font-bold text-primary-600 dark:text-primary-400">
-                                                    Rp {event.registration_fee.toLocaleString('id-ID')}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                                                <div className="text-base sm:text-lg font-bold text-green-600 dark:text-green-400">
-                                                    {t('event.freeEvent')}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Registration Button */}
+                                <div className="space-y-4">
                                     {user ? (
                                         <div className="space-y-3">
                                             {isRegistrationCancelled && (
