@@ -63,7 +63,7 @@ export async function getEventsWithSpeakers(
             )
         `)
         .eq('status', 'published')
-        .order('start_date', { ascending: true });
+        .order('start_date', { ascending: false });
 
     if (category && category !== 'all') {
         query = query.eq('category', category);
