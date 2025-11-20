@@ -18,6 +18,8 @@ export function useSupabaseHealth({ auto = false, intervalMs = 30000 }: { auto?:
             if (cancelled || isChecking) return; // avoid overlapping checks
             setIsChecking(true);
             try {
+                // Use head-only request to minimize data transfer
+                // This only checks if the table is accessible without fetching any data
                 const { error } = await supabase
                     .from('events')
                     .select('id', { head: true, count: 'exact' })
@@ -39,8 +41,9 @@ export function useSupabaseHealth({ auto = false, intervalMs = 30000 }: { auto?:
             }
         }
 
-        // Initial check (lazy: delay 1s to allow other critical queries first)
-        const initial = setTimeout(() => runCheck(), 1000);
+        // Initial check (lazy: delay 3s to allow other critical queries first)
+        // This prevents health check from running on every page navigation
+        const initial = setTimeout(() => runCheck(), 3000);
 
         if (auto) {
             timer = setInterval(() => {

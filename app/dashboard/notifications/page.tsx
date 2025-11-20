@@ -190,7 +190,7 @@ export default function NotificationsPage() {
             <>
                 <Navbar />
                 <div className="min-h-screen bg-gray-50 dark:bg-dark-primary animate-fade-in">
-                    <div className="container mx-auto px-4 py-8 max-w-4xl">
+                    <div className="container mx-auto px-4 py-8">
                         <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-6">
                             <div className="animate-pulse space-y-4">
                                 <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
@@ -219,170 +219,205 @@ export default function NotificationsPage() {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gray-50 dark:bg-dark-primary animate-fade-in">
-                <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <div className="min-h-screen bg-gray-50 dark:bg-dark-primary animate-fade-in pb-12">
+                <div className="container mx-auto px-4 py-8 content-align-navbar">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                         <div>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                                 Notifications
                             </h1>
-                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-                                {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
+                            <p className="text-gray-500 dark:text-gray-400 mt-1">
+                                Manage and view your recent activity
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-3">
                             <Link
                                 href="/dashboard"
-                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
                             >
                                 Back to Dashboard
                             </Link>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-sm transition-colors flex items-center gap-2"
                                 >
-                                    Mark All as Read
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Mark all read
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl p-4 mb-6 border border-transparent dark:border-gray-700">
-                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                            <div className="flex items-center gap-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by type:</label>
-                                <select
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value as FilterType)}
-                                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                                >
-                                    <option value="all">All Types</option>
-                                    <option value="registration">Registration</option>
-                                    <option value="event_update">Event Updates</option>
-                                    <option value="reminder">Reminders</option>
-                                    <option value="payment">Payments</option>
-                                    <option value="general">General</option>
-                                </select>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="unread-only"
-                                    checked={showUnreadOnly}
-                                    onChange={(e) => setShowUnreadOnly(e.target.checked)}
-                                    className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
-                                />
-                                <label htmlFor="unread-only" className="text-sm text-gray-700 dark:text-gray-300">
-                                    Show unread only
+                    {/* Filters & Controls */}
+                    <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <div className="relative flex-1 sm:flex-none">
+                                    <select
+                                        value={filter}
+                                        onChange={(e) => setFilter(e.target.value as FilterType)}
+                                        className="w-full pl-3 pr-10 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+                                    >
+                                        <option value="all">All Notifications</option>
+                                        <option value="registration">Registration</option>
+                                        <option value="event_update">Event Updates</option>
+                                        <option value="reminder">Reminders</option>
+                                        <option value="payment">Payments</option>
+                                        <option value="general">General</option>
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block"></div>
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <div className="relative">
+                                        <input
+                                            type="checkbox"
+                                            checked={showUnreadOnly}
+                                            onChange={(e) => setShowUnreadOnly(e.target.checked)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Unread only</span>
                                 </label>
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                Showing {filteredNotifications.length} results
                             </div>
                         </div>
                     </div>
 
                     {/* Notifications List */}
-                    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-xl border border-transparent dark:border-gray-700">
+                    <div className="space-y-4">
                         {paginatedNotifications.length === 0 ? (
-                            <div className="p-12 text-center">
-                                <svg className="w-20 h-20 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                </svg>
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No notifications found</h3>
-                                <p className="text-gray-500 dark:text-gray-400">
-                                    {filter !== 'all' || showUnreadOnly ? 'Try adjusting your filters' : 'You\'ll see notifications here when you have activity'}
+                            <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+                                <div className="w-20 h-20 mx-auto bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                                    <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No notifications found</h3>
+                                <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                                    {filter !== 'all' || showUnreadOnly
+                                        ? 'Try adjusting your filters to see more notifications.'
+                                        : 'You\'re all caught up! Check back later for updates.'}
                                 </p>
+                                {(filter !== 'all' || showUnreadOnly) && (
+                                    <button
+                                        onClick={() => { setFilter('all'); setShowUnreadOnly(false); }}
+                                        className="mt-6 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                                    >
+                                        Clear all filters
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <>
-                                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {paginatedNotifications.map((notification) => {
-                                        const handleClick = () => {
-                                            if (!notification.read) {
-                                                markAsRead(notification.id);
-                                            }
-                                        };
+                                <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                    <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                                        {paginatedNotifications.map((notification) => {
+                                            const handleClick = () => {
+                                                if (!notification.read) {
+                                                    markAsRead(notification.id);
+                                                }
+                                            };
 
-                                        const content = (
-                                            <div className="flex gap-4 p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                                {getNotificationIcon(notification.type)}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-start justify-between gap-3">
-                                                        <div className="flex-1">
-                                                            <h4 className="font-semibold text-gray-900 dark:text-white text-base mb-1">
-                                                                {notification.title}
-                                                            </h4>
-                                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                                                {notification.message}
-                                                            </p>
-                                                            {notification.event_title && (
-                                                                <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mb-2">
-                                                                    Event: {notification.event_title}
-                                                                </p>
-                                                            )}
-                                                            <p className="text-xs text-gray-500 dark:text-gray-500">
-                                                                {format(new Date(notification.created_at), 'EEEE, dd MMMM yyyy, HH:mm', { locale: id })}
-                                                            </p>
-                                                        </div>
-                                                        {!notification.read && (
-                                                            <span className="h-3 w-3 bg-primary-600 rounded-full flex-shrink-0 mt-1"></span>
-                                                        )}
+                                            const content = (
+                                                <div className={`flex gap-4 p-6 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 ${!notification.read ? 'bg-primary-50/30 dark:bg-primary-900/10' : ''}`}>
+                                                    <div className="flex-shrink-0">
+                                                        {getNotificationIcon(notification.type)}
                                                     </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-start justify-between gap-4 mb-2">
+                                                            <div>
+                                                                <h4 className={`text-base ${!notification.read ? 'font-bold text-gray-900 dark:text-white' : 'font-medium text-gray-800 dark:text-gray-200'}`}>
+                                                                    {notification.title}
+                                                                </h4>
+                                                                {notification.event_title && (
+                                                                    <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                        </svg>
+                                                                        {notification.event_title}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+                                                                {format(new Date(notification.created_at), 'MMM d, yyyy • HH:mm', { locale: id })}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                            {notification.message}
+                                                        </p>
+                                                    </div>
+                                                    {!notification.read && (
+                                                        <div className="flex-shrink-0 self-center">
+                                                            <div className="w-3 h-3 bg-primary-500 rounded-full ring-4 ring-primary-50 dark:ring-primary-900/20"></div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        );
+                                            );
 
-                                        if (notification.event_id) {
+                                            if (notification.event_id) {
+                                                return (
+                                                    <Link
+                                                        key={notification.id}
+                                                        href={`/events/${notification.event_id}`}
+                                                        onClick={handleClick}
+                                                        className="block group"
+                                                    >
+                                                        {content}
+                                                    </Link>
+                                                );
+                                            }
+
                                             return (
-                                                <Link
+                                                <div
                                                     key={notification.id}
-                                                    href={`/events/${notification.event_id}`}
                                                     onClick={handleClick}
-                                                    className="block"
+                                                    className="cursor-pointer group"
                                                 >
                                                     {content}
-                                                </Link>
+                                                </div>
                                             );
-                                        }
-
-                                        return (
-                                            <div
-                                                key={notification.id}
-                                                onClick={handleClick}
-                                                className="cursor-pointer"
-                                            >
-                                                {content}
-                                            </div>
-                                        );
-                                    })}
+                                        })}
+                                    </div>
                                 </div>
 
                                 {/* Pagination */}
                                 {totalPages > 1 && (
-                                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredNotifications.length)} of {filteredNotifications.length} notifications
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                                disabled={currentPage === 1}
-                                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-                                            >
-                                                Previous
-                                            </button>
-                                            <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
-                                                Page {currentPage} of {totalPages}
-                                            </span>
-                                            <button
-                                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                                disabled={currentPage === totalPages}
-                                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-                                            >
-                                                Next
-                                            </button>
-                                        </div>
+                                    <div className="flex items-center justify-between pt-4">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                            Previous
+                                        </button>
+                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                        >
+                                            Next
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 )}
                             </>

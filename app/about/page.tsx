@@ -10,7 +10,7 @@ export default function AboutPage() {
         <>
             <Navbar />
             <div className="min-h-screen bg-gray-50 dark:bg-dark-bg py-12 pt-24">
-                <div className="container mx-auto px-4">
+                <div className="container mx-auto px-4 content-align-navbar">
                     <div className="max-w-4xl mx-auto">
                         <div className="bg-white dark:bg-dark-card rounded-lg shadow-sm p-8">
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">

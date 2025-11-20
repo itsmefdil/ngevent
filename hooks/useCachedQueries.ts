@@ -55,8 +55,9 @@ export function useProfile(userId: string | undefined) {
             return data;
         },
         enabled: !!userId,
-        staleTime: CACHE_DURATION.PROFILE,
-        gcTime: CACHE_DURATION.PROFILE * 2,
+        staleTime: 30 * 60 * 1000, // 30 minutes (optimized)
+        gcTime: 60 * 60 * 1000, // 60 minutes
+        refetchOnMount: false,
     });
 }
 
@@ -101,8 +102,9 @@ export function useEvents(filter?: 'upcoming' | 'past' | 'all') {
 
             return data || [];
         },
-        staleTime: CACHE_DURATION.EVENTS,
-        gcTime: CACHE_DURATION.EVENTS * 2,
+        staleTime: 15 * 60 * 1000, // 15 minutes (optimized)
+        gcTime: 30 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 
@@ -139,8 +141,9 @@ export function useEvent(eventId: string | undefined) {
             return data;
         },
         enabled: !!eventId,
-        staleTime: CACHE_DURATION.EVENT_DETAIL,
-        gcTime: CACHE_DURATION.EVENT_DETAIL * 2,
+        staleTime: 20 * 60 * 1000, // 20 minutes (optimized)
+        gcTime: 40 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 
@@ -177,8 +180,9 @@ export function useUserEvents(userId: string | undefined) {
             return data || [];
         },
         enabled: !!userId,
-        staleTime: CACHE_DURATION.EVENTS,
-        gcTime: CACHE_DURATION.EVENTS * 2,
+        staleTime: 15 * 60 * 1000, // 15 minutes (optimized)
+        gcTime: 30 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 
@@ -224,8 +228,9 @@ export function useUserRegistrations(userId: string | undefined) {
             return data || [];
         },
         enabled: !!userId,
-        staleTime: CACHE_DURATION.REGISTRATIONS,
-        gcTime: CACHE_DURATION.REGISTRATIONS * 2,
+        staleTime: 10 * 60 * 1000, // 10 minutes (optimized)
+        gcTime: 20 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 
@@ -268,8 +273,9 @@ export function useEventRegistrations(eventId: string | undefined) {
             return data || [];
         },
         enabled: !!eventId,
-        staleTime: CACHE_DURATION.REGISTRATIONS,
-        gcTime: CACHE_DURATION.REGISTRATIONS * 2,
+        staleTime: 10 * 60 * 1000, // 10 minutes (optimized)
+        gcTime: 20 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 
@@ -307,8 +313,9 @@ export function useNotifications(userId: string | undefined) {
             return data || [];
         },
         enabled: !!userId,
-        staleTime: CACHE_DURATION.NOTIFICATIONS,
-        gcTime: CACHE_DURATION.NOTIFICATIONS * 2,
+        staleTime: 5 * 60 * 1000, // 5 minutes (optimized)
+        gcTime: 10 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 
@@ -351,8 +358,9 @@ export function useDashboardStats(userId: string | undefined) {
             return stats;
         },
         enabled: !!userId,
-        staleTime: CACHE_DURATION.STATS,
-        gcTime: CACHE_DURATION.STATS * 2,
+        staleTime: 10 * 60 * 1000, // 10 minutes (optimized)
+        gcTime: 20 * 60 * 1000,
+        refetchOnMount: false,
     });
 }
 

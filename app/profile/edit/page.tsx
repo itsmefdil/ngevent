@@ -187,7 +187,7 @@ export default function EditProfilePage() {
         <div className="min-h-screen bg-gray-50 dark:bg-dark-primary animate-fade-in">
             <Navbar />
 
-            <div className="container mx-auto px-4 py-12 max-w-4xl">
+            <div className="container mx-auto px-4 py-12 content-align-navbar">
                 {/* Header */}
                 <div className="mb-8">
                     <Link

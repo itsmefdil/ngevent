@@ -12,7 +12,10 @@ interface CategoryCount {
     category: string;
     count: number;
     icon: string;
+    path: string;
     color: string;
+    iconColor: string;
+    iconBg: string;
 }
 
 export default function DiscoverPage() {
@@ -23,165 +26,187 @@ export default function DiscoverPage() {
     const { data: upcomingEvents = [], isLoading: loadingEvents } = useUpcomingEvents(6);
 
     // Map category counts ke format yang dibutuhkan
-    const categoryList: CategoryCount[] = CATEGORIES.map(cat => ({
+    const categoryList = CATEGORIES.map(cat => ({
         category: cat.value,
         count: categoryCounts[cat.value] || 0,
         icon: cat.icon,
+        path: cat.path,
         color: cat.color,
+        iconColor: cat.iconColor,
+        iconBg: cat.iconBg,
     }));
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-primary">
             <Navbar />
 
-            <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 max-w-7xl">
-                <div className="max-w-6xl mx-auto">
-                    {/* Header */}
-                    <div className="mb-6 sm:mb-8 md:mb-12">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 md:mb-4">
-                            {t('discover.title')}
-                        </h1>
-                        <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
-                            {t('discover.subtitle')}
-                        </p>
-                    </div>
+            <div className="container mx-auto px-4 py-8 md:py-12 content-align-navbar">
+                {/* Header */}
+                <div className="mb-12 text-center sm:text-left">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+                        {t('discover.title')}
+                    </h1>
+                    <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+                        {t('discover.subtitle')}
+                    </p>
+                </div>
 
-                    {/* Browse by Category */}
-                    <div className="mb-6 sm:mb-8 md:mb-10">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+                {/* Browse by Category */}
+                <div className="mb-16">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                             {t('discover.browseByCategory')}
                         </h2>
+                    </div>
 
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                            {categoryList.map((category) => (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                        {categoryList.map((category) => (
+                            <Link
+                                key={category.category}
+                                href={`/events?category=${encodeURIComponent(category.category)}`}
+                                className="group relative overflow-hidden"
+                            >
+                                <div className="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-2xl dark:hover:shadow-primary-900/20 border border-gray-100 dark:border-gray-800 hover:border-primary-100 dark:hover:border-gray-700 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col items-center text-center sm:items-start sm:text-left">
+                                    <div className={`w-14 h-14 rounded-2xl ${category.iconBg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                                        <svg className={`w-7 h-7 ${category.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={category.path} />
+                                        </svg>
+                                    </div>
+
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                        {category.category}
+                                    </h3>
+
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                        {loadingCounts ? (
+                                            <span className="animate-pulse">...</span>
+                                        ) : (
+                                            `${category.count} ${t('discover.events')}`
+                                        )}
+                                    </p>
+
+                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                        <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Upcoming Events Section */}
+                <div>
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {t('home.upcoming')} {t('discover.events')}
+                        </h2>
+                        <Link
+                            href="/events"
+                            className="group flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors"
+                        >
+                            {t('home.viewAll')}
+                            <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </Link>
+                    </div>
+
+                    {loadingEvents ? (
+                        <EventCardSkeletonGrid count={6} />
+                    ) : upcomingEvents.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {upcomingEvents.map((event: UpcomingEvent) => (
                                 <Link
-                                    key={category.category}
-                                    href={`/events?category=${encodeURIComponent(category.category)}`}
-                                    className="group"
+                                    key={event.id}
+                                    href={`/events/${event.id}`}
+                                    className="group bg-white dark:bg-dark-card rounded-2xl shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-2xl dark:hover:shadow-primary-900/10 overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300 hover:-translate-y-1"
                                 >
-                                    <div className="bg-white dark:bg-dark-card rounded-lg sm:rounded-xl shadow-md dark:shadow-xl p-3 sm:p-4 md:p-6 border border-transparent dark:border-gray-700 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95">
-                                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                                            <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center text-lg sm:text-xl md:text-2xl shadow-lg flex-shrink-0`}>
-                                                {category.icon}
+                                    <div className="aspect-[4/3] overflow-hidden relative">
+                                        {event.image_url ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={event.image_url}
+                                                alt={event.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 flex items-center justify-center">
+                                                <svg className="w-12 h-12 text-primary-400 dark:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
-                                                    {category.category}
-                                                </h3>
-                                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                                    {loadingCounts ? '...' : `${category.count} ${t('discover.events')}`}
-                                                </p>
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                        {event.category && (
+                                            <div className="absolute top-3 left-3">
+                                                <span className="px-3 py-1 text-xs font-bold text-white bg-black/50 backdrop-blur-md rounded-full border border-white/20">
+                                                    {event.category}
+                                                </span>
                                             </div>
-                                            <svg
-                                                className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-600 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors flex-shrink-0"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        )}
+                                    </div>
+
+                                    <div className="p-5">
+                                        <div className="flex items-center gap-2 text-xs font-medium text-primary-600 dark:text-primary-400 mb-2">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
+                                            {new Date(event.start_date).toLocaleDateString('id-ID', {
+                                                weekday: 'long',
+                                                day: 'numeric',
+                                                month: 'long',
+                                                year: 'numeric'
+                                            })}
+                                        </div>
+
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                            {event.title}
+                                        </h3>
+
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
+                                            {event.description}
+                                        </p>
+
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+                                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span className="truncate max-w-[150px]">{event.location || 'Online'}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
                             ))}
                         </div>
-                    </div>
-
-                    {/* Upcoming Events Section */}
-                    <div className="mt-8 sm:mt-10 md:mt-12">
-                        <div className="flex items-center justify-between mb-4 sm:mb-6">
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                                {t('home.upcoming')} {t('discover.events')}
-                            </h2>
+                    ) : (
+                        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm p-12 text-center border border-gray-100 dark:border-gray-800">
+                            <div className="w-20 h-20 mx-auto bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                                <svg className="w-10 h-10 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('home.noUpcoming')}
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                                {t('home.noUpcomingDesc')}
+                            </p>
                             <Link
                                 href="/events"
-                                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm sm:text-base font-semibold flex items-center gap-1 sm:gap-2"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors shadow-lg shadow-primary-600/20"
                             >
-                                <span className="hidden sm:inline">{t('home.viewAll')}</span>
-                                <span className="sm:hidden">{t('home.viewAll').split(' ')[0]}</span>
-                                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                {t('home.viewAll')}
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
                             </Link>
                         </div>
-
-                        {loadingEvents ? (
-                            <EventCardSkeletonGrid count={6} />
-                        ) : upcomingEvents.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-                                {upcomingEvents.map((event: UpcomingEvent) => (
-                                    <Link
-                                        key={event.id}
-                                        href={`/events/${event.id}`}
-                                        className="group bg-white dark:bg-dark-card rounded-lg sm:rounded-xl shadow-md dark:shadow-xl overflow-hidden border border-transparent dark:border-gray-700 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95"
-                                    >
-                                        {event.image_url ? (
-                                            <div className="aspect-[4/5] overflow-hidden">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={event.image_url}
-                                                    alt={event.title}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="aspect-[4/5] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 flex items-center justify-center">
-                                                <svg className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-primary-400 dark:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-                                        )}
-                                        <div className="p-3 sm:p-4">
-                                            {event.category && (
-                                                <span className="inline-block px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full mb-2">
-                                                    {event.category}
-                                                </span>
-                                            )}
-                                            <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                                {event.title}
-                                            </h3>
-                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2 sm:mb-3">
-                                                {event.description}
-                                            </p>
-                                            <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                <span className="truncate">
-                                                    {new Date(event.start_date).toLocaleDateString('id-ID', {
-                                                        day: 'numeric',
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-white dark:bg-dark-card rounded-lg sm:rounded-xl shadow-md dark:shadow-xl p-6 sm:p-8 md:p-12 border border-transparent dark:border-gray-700 text-center">
-                                <svg className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto text-gray-400 dark:text-gray-600 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                    {t('home.noUpcoming')}
-                                </h3>
-                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
-                                    {t('home.noUpcomingDesc')}
-                                </p>
-                                <Link
-                                    href="/events"
-                                    className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-primary-600 dark:bg-primary-500 text-white text-sm sm:text-base font-semibold rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
-                                >
-                                    {t('home.viewAll')}
-                                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                </Link>
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

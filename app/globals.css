@@ -40,22 +40,38 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
+  /* Align body content with navbar menu items (after logo) */
+  .content-align-navbar {
+    padding-left: calc(240px + 2rem);
+    /* w-60 (240px) + px-4 (1rem) + menu offset */
+    padding-right: calc(240px + 2rem);
+    /* Same padding on right for symmetry */
+  }
+
+  @media (max-width: 1024px) {
+    .content-align-navbar {
+      padding-left: 1rem;
+      /* Reset to normal padding on mobile */
+      padding-right: 1rem;
+    }
+  }
+
   /* Custom scrollbar untuk dark mode */
   .dark ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-  
+
   .dark ::-webkit-scrollbar-track {
     background: #1e293b;
   }
-  
+
   .dark ::-webkit-scrollbar-thumb {
     background: #22c55e;
     border-radius: 4px;
   }
-  
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background: #16a34a;
   }
@@ -70,12 +86,15 @@
     0% {
       transform: translate(0px, 0px) scale(1);
     }
+
     33% {
       transform: translate(30px, -50px) scale(1.1);
     }
+
     66% {
       transform: translate(-20px, 20px) scale(0.9);
     }
+
     100% {
       transform: translate(0px, 0px) scale(1);
     }
@@ -112,15 +131,15 @@
     line-height: 1.75;
     color: #374151;
   }
-  
+
   .dark .markdown-content {
     color: #e5e7eb;
   }
-  
+
   .markdown-content p {
     margin-bottom: 1em;
   }
-  
+
   .markdown-content h1,
   .markdown-content h2,
   .markdown-content h3,
@@ -132,7 +151,7 @@
     margin-bottom: 0.5em;
     color: #111827;
   }
-  
+
   .dark .markdown-content h1,
   .dark .markdown-content h2,
   .dark .markdown-content h3,
@@ -141,22 +160,33 @@
   .dark .markdown-content h6 {
     color: #fff;
   }
-  
-  .markdown-content h1 { font-size: 2em; }
-  .markdown-content h2 { font-size: 1.5em; }
-  .markdown-content h3 { font-size: 1.25em; }
-  .markdown-content h4 { font-size: 1.1em; }
-  
+
+  .markdown-content h1 {
+    font-size: 2em;
+  }
+
+  .markdown-content h2 {
+    font-size: 1.5em;
+  }
+
+  .markdown-content h3 {
+    font-size: 1.25em;
+  }
+
+  .markdown-content h4 {
+    font-size: 1.1em;
+  }
+
   .markdown-content ul,
   .markdown-content ol {
     padding-left: 1.5em;
     margin-bottom: 1em;
   }
-  
+
   .markdown-content li {
     margin-bottom: 0.5em;
   }
-  
+
   .markdown-content blockquote {
     border-left: 4px solid #22c55e;
     padding-left: 1em;
@@ -164,12 +194,12 @@
     font-style: italic;
     color: #6b7280;
   }
-  
+
   .dark .markdown-content blockquote {
     border-left-color: #16a34a;
     color: #9ca3af;
   }
-  
+
   .markdown-content pre {
     background-color: #f3f4f6;
     padding: 1em;
@@ -177,11 +207,11 @@
     overflow-x: auto;
     margin: 1em 0;
   }
-  
+
   .dark .markdown-content pre {
     background-color: #1f2937;
   }
-  
+
   .markdown-content code {
     background-color: #f3f4f6;
     padding: 0.2em 0.4em;
@@ -190,58 +220,58 @@
     font-size: 0.9em;
     color: #22c55e;
   }
-  
+
   .dark .markdown-content code {
     background-color: #1f2937;
     color: #22c55e;
   }
-  
+
   .markdown-content a {
     color: #22c55e;
     text-decoration: underline;
   }
-  
+
   .markdown-content a:hover {
     color: #16a34a;
   }
-  
+
   .markdown-content img {
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
     margin: 1em 0;
   }
-  
+
   .markdown-content strong {
     font-weight: 700;
   }
-  
+
   .markdown-content em {
     font-style: italic;
   }
-  
+
   .markdown-content table {
     width: 100%;
     border-collapse: collapse;
     margin: 1em 0;
   }
-  
+
   .markdown-content th,
   .markdown-content td {
     border: 1px solid #d1d5db;
     padding: 0.5em;
   }
-  
+
   .dark .markdown-content th,
   .dark .markdown-content td {
     border-color: #4b5563;
   }
-  
+
   .markdown-content th {
     background-color: #f3f4f6;
     font-weight: 600;
   }
-  
+
   .dark .markdown-content th {
     background-color: #374151;
   }
@@ -251,11 +281,11 @@
     font-size: 14px;
     line-height: 1.75;
   }
-  
+
   .ql-editor-content p {
     margin-bottom: 1em;
   }
-  
+
   .ql-editor-content h1,
   .ql-editor-content h2,
   .ql-editor-content h3,
@@ -266,22 +296,33 @@
     margin-top: 1.5em;
     margin-bottom: 0.5em;
   }
-  
-  .ql-editor-content h1 { font-size: 2em; }
-  .ql-editor-content h2 { font-size: 1.5em; }
-  .ql-editor-content h3 { font-size: 1.25em; }
-  .ql-editor-content h4 { font-size: 1.1em; }
-  
+
+  .ql-editor-content h1 {
+    font-size: 2em;
+  }
+
+  .ql-editor-content h2 {
+    font-size: 1.5em;
+  }
+
+  .ql-editor-content h3 {
+    font-size: 1.25em;
+  }
+
+  .ql-editor-content h4 {
+    font-size: 1.1em;
+  }
+
   .ql-editor-content ul,
   .ql-editor-content ol {
     padding-left: 1.5em;
     margin-bottom: 1em;
   }
-  
+
   .ql-editor-content li {
     margin-bottom: 0.5em;
   }
-  
+
   .ql-editor-content blockquote {
     border-left: 4px solid #22c55e;
     padding-left: 1em;
@@ -289,12 +330,12 @@
     font-style: italic;
     color: #6b7280;
   }
-  
+
   .dark .ql-editor-content blockquote {
     border-left-color: #16a34a;
     color: #9ca3af;
   }
-  
+
   .ql-editor-content pre {
     background-color: #f3f4f6;
     padding: 1em;
@@ -302,11 +343,11 @@
     overflow-x: auto;
     margin: 1em 0;
   }
-  
+
   .dark .ql-editor-content pre {
     background-color: #1f2937;
   }
-  
+
   .ql-editor-content code {
     background-color: #f3f4f6;
     padding: 0.2em 0.4em;
@@ -314,31 +355,31 @@
     font-family: monospace;
     font-size: 0.9em;
   }
-  
+
   .dark .ql-editor-content code {
     background-color: #1f2937;
   }
-  
+
   .ql-editor-content a {
     color: #22c55e;
     text-decoration: underline;
   }
-  
+
   .ql-editor-content a:hover {
     color: #16a34a;
   }
-  
+
   .ql-editor-content img {
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
     margin: 1em 0;
   }
-  
+
   .ql-editor-content strong {
     font-weight: 700;
   }
-  
+
   .ql-editor-content em {
     font-style: italic;
   }
@@ -348,6 +389,7 @@
     0% {
       transform: translateX(-100%);
     }
+
     100% {
       transform: translateX(100%);
     }
@@ -362,6 +404,7 @@
     0% {
       background-position: -200px 0;
     }
+
     100% {
       background-position: calc(200px + 100%) 0;
     }
@@ -384,6 +427,7 @@
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);

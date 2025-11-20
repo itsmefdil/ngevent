@@ -11,7 +11,8 @@ export default function BottomNav() {
     const { t } = useLanguage();
     const pathname = usePathname();
     const { user, loading } = useAuth();
-    const healthStatus = useSupabaseHealth();
+    // Health check disabled to reduce unnecessary queries
+    // const healthStatus = useSupabaseHealth();
 
     // Auth state now handled by AuthProvider; remove local listener
     useEffect(() => { /* no-op retained for potential future side-effects */ }, []);
@@ -78,11 +79,13 @@ export default function BottomNav() {
     return (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 shadow-lg pb-safe">
             <div className="flex justify-around items-center h-16">
+                {/* Health check disabled to reduce queries
                 {healthStatus === 'error' && (
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] rounded bg-red-500 text-white shadow">
                         Koneksi DB gagal
                     </div>
                 )}
+                */}
                 {navItems.map((item) => {
                     const active = isActive(item.href);
                     return (

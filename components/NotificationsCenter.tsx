@@ -285,19 +285,19 @@ export default function NotificationsCenter({ userId, preview = false }: { userI
                 <>
                     {/* Backdrop */}
                     <div
-                        className="fixed inset-0 z-40"
+                        className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20 backdrop-blur-[1px]"
                         onClick={() => setIsOpen(false)}
                     ></div>
 
                     {/* Dropdown Panel */}
-                    <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-dark-card rounded-lg shadow-xl dark:shadow-2xl border border-gray-200 dark:border-gray-700 z-50 animate-fade-in">
+                    <div className="fixed left-4 right-4 top-[70px] md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-96 bg-white dark:bg-dark-card rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 animate-fade-in overflow-hidden ring-1 ring-black/5">
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Notifications</h3>
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                            <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                                    className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                                 >
                                     Mark all as read
                                 </button>
@@ -305,103 +305,105 @@ export default function NotificationsCenter({ userId, preview = false }: { userI
                         </div>
 
                         {/* Notifications List */}
-                        <div className="max-h-96 overflow-y-auto">
+                        <div className="max-h-[60vh] md:max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
                             {loading ? (
-                                <div className="p-8">
-                                    <div className="space-y-4">
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="flex gap-3 animate-pulse">
-                                                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                                                <div className="flex-1 space-y-2">
-                                                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : notifications.length === 0 ? (
-                                <div className="p-8 text-center">
-                                    <svg className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                    </svg>
-                                    <p className="text-gray-500 dark:text-gray-400">No notifications yet</p>
-                                </div>
-                            ) : (
-                                notifications.map((notification) => {
-                                    const handleClick = () => {
-                                        if (!notification.read) {
-                                            markAsRead(notification.id);
-                                        }
-                                        if (notification.event_id) {
-                                            setIsOpen(false);
-                                        }
-                                    };
-
-                                    const itemClassName = `block p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${!notification.read ? 'bg-primary-50 dark:bg-primary-900/10' : ''
-                                        }`;
-
-                                    const content = (
-                                        <div className="flex gap-3">
-                                            {getNotificationIcon(notification.type)}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
-                                                        {notification.title}
-                                                    </h4>
-                                                    {!notification.read && (
-                                                        <span className="h-2 w-2 bg-primary-600 rounded-full flex-shrink-0 mt-1"></span>
-                                                    )}
-                                                </div>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                    {notification.message}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                                                    {format(new Date(notification.created_at), 'dd MMM yyyy, HH:mm', { locale: id })}
-                                                </p>
+                                <div className="p-4 space-y-4">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="flex gap-3 animate-pulse">
+                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0"></div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
                                             </div>
                                         </div>
-                                    );
+                                    ))}
+                                </div>
+                            ) : notifications.length === 0 ? (
+                                <div className="py-12 px-4 text-center">
+                                    <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                                        <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                        </svg>
+                                    </div>
+                                    <h4 className="text-gray-900 dark:text-white font-medium mb-1">No notifications</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">You're all caught up!</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                                    {notifications.map((notification) => {
+                                        const handleClick = () => {
+                                            if (!notification.read) {
+                                                markAsRead(notification.id);
+                                            }
+                                            if (notification.event_id) {
+                                                setIsOpen(false);
+                                            }
+                                        };
 
-                                    if (notification.event_id) {
+                                        const itemClassName = `block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer relative ${!notification.read ? 'bg-primary-50/40 dark:bg-primary-900/10' : ''
+                                            }`;
+
+                                        const content = (
+                                            <div className="flex gap-3">
+                                                <div className="flex-shrink-0 mt-1">
+                                                    {getNotificationIcon(notification.type)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                                        <h4 className={`text-sm ${!notification.read ? 'font-semibold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-200'}`}>
+                                                            {notification.title}
+                                                        </h4>
+                                                        <span className="text-[10px] text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
+                                                            {format(new Date(notification.created_at), 'MMM d, HH:mm', { locale: id })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
+                                                        {notification.message}
+                                                    </p>
+                                                    {!notification.read && (
+                                                        <span className="absolute top-4 right-4 w-2 h-2 bg-primary-500 rounded-full ring-2 ring-white dark:ring-dark-card"></span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+
+                                        if (notification.event_id) {
+                                            return (
+                                                <Link
+                                                    key={notification.id}
+                                                    href={`/events/${notification.event_id}`}
+                                                    onClick={handleClick}
+                                                    className={itemClassName}
+                                                >
+                                                    {content}
+                                                </Link>
+                                            );
+                                        }
+
                                         return (
-                                            <Link
+                                            <div
                                                 key={notification.id}
-                                                href={`/events/${notification.event_id}`}
                                                 onClick={handleClick}
                                                 className={itemClassName}
                                             >
                                                 {content}
-                                            </Link>
+                                            </div>
                                         );
-                                    }
-
-                                    return (
-                                        <div
-                                            key={notification.id}
-                                            onClick={handleClick}
-                                            className={itemClassName}
-                                        >
-                                            {content}
-                                        </div>
-                                    );
-                                })
+                                    })}
+                                </div>
                             )}
                         </div>
 
                         {/* Footer */}
-                        {notifications.length > 0 && (
-                            <div className="p-3 border-t border-gray-200 dark:border-gray-700 text-center">
-                                <Link
-                                    href="/dashboard/notifications"
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                                >
-                                    View all notifications
-                                </Link>
-                            </div>
-                        )}
+                        <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-center">
+                            <Link
+                                href="/dashboard/notifications"
+                                onClick={() => setIsOpen(false)}
+                                className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                            >
+                                View all notifications
+                            </Link>
+                        </div>
                     </div>
                 </>
             )}

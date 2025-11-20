@@ -143,6 +143,7 @@ export default function UpcomingEventsWidget({ events }: UpcomingEventsWidgetPro
                                 <Link
                                     key={event.id}
                                     href={`/events/${event.id}`}
+                                    prefetch={false}
                                     className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 hover:shadow-md transition-all group"
                                     style={{ animationDelay: `${0.25 + index * 0.05}s` }}
                                 >

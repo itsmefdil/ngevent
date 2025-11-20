@@ -9,8 +9,7 @@ import {
     getCategoryCounts,
     getUpcomingEvents,
     getUserRegistrations,
-    getOrganizerEvents,
-    clearCache
+    getOrganizerEvents
 } from '@/lib/supabase-optimized';
 import { supabase } from '@/lib/supabase';
 
@@ -22,7 +21,7 @@ export function useEvent(eventId: string | null) {
         queryKey: ['event', eventId],
         queryFn: () => eventId ? getEventOptimized(eventId) : null,
         enabled: !!eventId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 15 * 60 * 1000, // 15 minutes (optimized)
     });
 }
 
@@ -34,7 +33,7 @@ export function useEventWithRelations(eventId: string | null) {
         queryKey: ['event-full', eventId],
         queryFn: () => eventId ? getEventWithRelations(eventId) : null,
         enabled: !!eventId,
-        staleTime: 3 * 60 * 1000, // 3 minutes
+        staleTime: 20 * 60 * 1000, // 20 minutes (optimized)
     });
 }
 
@@ -45,8 +44,8 @@ export function useEvents(page: number = 0, pageSize: number = 10, category?: st
     return useQuery({
         queryKey: ['events', page, pageSize, category, search],
         queryFn: () => getEventsOptimized(page, pageSize, category, search),
-        staleTime: 2 * 60 * 1000, // 2 minutes
-        retry: 2,
+        staleTime: 15 * 60 * 1000, // 15 minutes (optimized)
+        retry: 1,
     });
 }
 
@@ -57,8 +56,8 @@ export function useEventsWithSpeakers(category?: string, search?: string, limit?
     return useQuery({
         queryKey: ['events-speakers', category, search, limit],
         queryFn: () => getEventsWithSpeakers(category, search, limit),
-        staleTime: 2 * 60 * 1000,
-        retry: 2,
+        staleTime: 15 * 60 * 1000, // 15 minutes (optimized)
+        retry: 1,
     });
 }
 
@@ -69,8 +68,8 @@ export function useUpcomingEvents(limit: number = 6) {
     return useQuery({
         queryKey: ['upcoming-events', limit],
         queryFn: () => getUpcomingEvents(limit),
-        staleTime: 2 * 60 * 1000,
-        retry: 2,
+        staleTime: 15 * 60 * 1000, // 15 minutes (optimized)
+        retry: 1,
     });
 }
 
@@ -81,8 +80,8 @@ export function useCategoryCounts() {
     return useQuery({
         queryKey: ['category-counts'],
         queryFn: getCategoryCounts,
-        staleTime: 5 * 60 * 1000,
-        retry: 2,
+        staleTime: 30 * 60 * 1000, // 30 minutes (optimized - rarely changes)
+        retry: 1,
     });
 }
 
@@ -94,7 +93,7 @@ export function useFormFields(eventId: string | null) {
         queryKey: ['form-fields', eventId],
         queryFn: () => eventId ? getFormFieldsOptimized(eventId) : null,
         enabled: !!eventId,
-        staleTime: 5 * 60 * 1000,
+        staleTime: 30 * 60 * 1000, // 30 minutes (optimized - rarely changes)
     });
 }
 
@@ -106,7 +105,7 @@ export function useSpeakers(eventId: string | null) {
         queryKey: ['speakers', eventId],
         queryFn: () => eventId ? getSpeakersOptimized(eventId) : null,
         enabled: !!eventId,
-        staleTime: 5 * 60 * 1000,
+        staleTime: 30 * 60 * 1000, // 30 minutes (optimized - rarely changes)
     });
 }
 
@@ -118,8 +117,8 @@ export function useMyEvents(userId: string | null) {
         queryKey: ['my-events', userId],
         queryFn: () => userId ? getOrganizerEvents(userId) : [],
         enabled: !!userId,
-        staleTime: 1 * 60 * 1000, // 1 minute for dashboard
-        retry: 2,
+        staleTime: 10 * 60 * 1000, // 10 minutes (optimized)
+        retry: 1,
     });
 }
 
@@ -134,8 +133,8 @@ export function useMyRegistrations(userId: string | null) {
             return getUserRegistrations(userId);
         },
         enabled: !!userId,
-        staleTime: 1 * 60 * 1000,
-        retry: 2,
+        staleTime: 10 * 60 * 1000, // 10 minutes (optimized)
+        retry: 1,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
 }
@@ -160,8 +159,6 @@ export function useCreateEvent() {
         onSuccess: (data, variables) => {
             // Invalidate my-events query
             queryClient.invalidateQueries({ queryKey: ['my-events'] });
-            // Clear events list cache
-            clearCache('events');
         },
     });
 }
@@ -190,9 +187,10 @@ export function useUpdateEvent(eventId: string) {
             queryClient.invalidateQueries({ queryKey: ['event-full', eventId] });
             queryClient.invalidateQueries({ queryKey: ['my-events'] });
 
-            // Clear cache
-            clearCache(`event_${eventId}`);
-            clearCache(`event_full_${eventId}`);
+            // Invalidate specific event query
+            queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+            queryClient.invalidateQueries({ queryKey: ['event-full', eventId] });
+            queryClient.invalidateQueries({ queryKey: ['my-events'] });
         },
     });
 }
@@ -239,7 +237,7 @@ export function useRegistrationStatus(eventId: string | null, userId: string | n
             return !!data;
         },
         enabled: !!eventId && !!userId,
-        staleTime: 30 * 1000, // 30 seconds for registration status
+        staleTime: 5 * 60 * 1000, // 5 minutes (optimized from 30s)
     });
 }
 
@@ -261,6 +259,6 @@ export function useRegistrationsCount(eventId: string | null) {
             return count || 0;
         },
         enabled: !!eventId,
-        staleTime: 1 * 60 * 1000, // 1 minute
+        staleTime: 5 * 60 * 1000, // 5 minutes (optimized)
     });
 }

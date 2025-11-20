@@ -39,24 +39,16 @@ function EventsContent() {
     const [categoryFilter, setCategoryFilter] = useState(() => searchParams.get('category') || 'all');
 
     // Menggunakan React Query hook dengan optimized query
-    const { data: allEvents = [], isLoading: loading, isError, error } = useEventsWithSpeakers(
+    const { data: filteredEvents = [], isLoading: loading, isError, error } = useEventsWithSpeakers(
         categoryFilter !== 'all' ? categoryFilter : undefined,
         searchQuery || undefined
     );
-
-    // Client-side filtering untuk search (karena sudah di-optimize di server)
-    const filteredEvents = allEvents.filter((event: EventWithSpeakers) => {
-        if (searchQuery) {
-            return event.title.toLowerCase().includes(searchQuery.toLowerCase());
-        }
-        return true;
-    });
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-primary">
             <Navbar />
 
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
+            <div className="container mx-auto px-4 py-12 content-align-navbar">
                 {/* Page Header */}
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t('events.title')}</h1>
@@ -282,7 +274,7 @@ export default function EventsPage() {
         <Suspense fallback={
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <Navbar />
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 py-8 content-align-navbar">
                     <div className="text-center">Loading...</div>
                 </div>
             </div>

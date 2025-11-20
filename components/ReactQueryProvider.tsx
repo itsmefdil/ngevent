@@ -9,11 +9,11 @@ export default function ReactQueryProvider({ children }: { children: ReactNode }
             new QueryClient({
                 defaultOptions: {
                     queries: {
-                        staleTime: 2 * 60 * 1000, // 2 minutes - data dianggap fresh
-                        gcTime: 10 * 60 * 1000, // 10 minutes - cache cleanup (formerly cacheTime)
-                        refetchOnWindowFocus: false, // Tidak refetch saat window focus
-                        refetchOnReconnect: true, // Refetch saat reconnect
-                        refetchOnMount: true, // Refetch saat component mount jika data stale
+                        staleTime: 10 * 60 * 1000, // 10 minutes - data considered fresh (increased from 2min)
+                        gcTime: 30 * 60 * 1000, // 30 minutes - cache cleanup (increased from 10min)
+                        refetchOnWindowFocus: false, // Don't refetch on window focus
+                        refetchOnReconnect: true, // Refetch on reconnect
+                        refetchOnMount: false, // Don't refetch on mount if data exists (OPTIMIZATION)
                         retry: (failureCount, error: any) => {
                             console.log('🔄 React Query retry check:', { failureCount, error: error?.message });
                             // Don't retry on timeout errors
@@ -21,8 +21,8 @@ export default function ReactQueryProvider({ children }: { children: ReactNode }
                                 console.warn('⏱️ Request timeout - not retrying');
                                 return false;
                             }
-                            // Retry up to 3 times for other errors
-                            return failureCount < 3;
+                            // Retry up to 2 times (reduced from 3)
+                            return failureCount < 2;
                         },
                         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
                     },
