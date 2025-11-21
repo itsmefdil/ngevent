@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export type HealthStatus = 'checking' | 'ok' | 'retrying' | 'error';
 
 export function useSupabaseHealth({ auto = false, intervalMs = 30000 }: { auto?: boolean; intervalMs?: number } = {}) {
     const [status, setStatus] = useState<HealthStatus>('checking');
-    const [lastChecked, setLastChecked] = useState<number | null>(null);
-    const [isChecking, setIsChecking] = useState(false);
+    // Use refs for internal state to avoid effect dependency loops
+    const lastCheckedRef = useRef<number | null>(null);
+    const isCheckingRef = useRef(false);
 
     useEffect(() => {
         let cancelled = false;
         let timer: NodeJS.Timeout | null = null;
 
         async function runCheck(attempt = 0) {
-            if (cancelled || isChecking) return; // avoid overlapping checks
-            setIsChecking(true);
+            if (cancelled || isCheckingRef.current) return; // avoid overlapping checks
+
+            isCheckingRef.current = true;
             try {
                 // Use head-only request to minimize data transfer
                 // This only checks if the table is accessible without fetching any data
@@ -36,8 +38,8 @@ export function useSupabaseHealth({ auto = false, intervalMs = 30000 }: { auto?:
                 }
                 setStatus('error');
             } finally {
-                setIsChecking(false);
-                setLastChecked(Date.now());
+                isCheckingRef.current = false;
+                lastCheckedRef.current = Date.now();
             }
         }
 
@@ -48,8 +50,8 @@ export function useSupabaseHealth({ auto = false, intervalMs = 30000 }: { auto?:
         if (auto) {
             timer = setInterval(() => {
                 // Skip if recently checked (< interval/2) or already in progress
-                if (isChecking) return;
-                if (lastChecked && Date.now() - lastChecked < intervalMs / 2) return;
+                if (isCheckingRef.current) return;
+                if (lastCheckedRef.current && Date.now() - lastCheckedRef.current < intervalMs / 2) return;
                 runCheck();
             }, intervalMs);
         }
@@ -59,7 +61,7 @@ export function useSupabaseHealth({ auto = false, intervalMs = 30000 }: { auto?:
             clearTimeout(initial);
             if (timer) clearInterval(timer);
         };
-    }, [auto, intervalMs, lastChecked, isChecking]);
+    }, [auto, intervalMs]);
 
     return status;
 }
