@@ -55,7 +55,7 @@ export default function DeleteEventModal({
                     </h3>
 
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        Are you sure you want to delete <span className="font-semibold text-gray-900 dark:text-white">"{eventTitle}"</span>? This action cannot be undone.
+                        Are you sure you want to delete <span className="font-semibold text-gray-900 dark:text-white">&quot;{eventTitle}&quot;</span>? This action cannot be undone.
                     </p>
 
                     <div className="flex gap-3 w-full">

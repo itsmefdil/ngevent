@@ -23,7 +23,7 @@ export default function DashboardHeader({ user, profile }: DashboardHeaderProps)
                     {getGreeting()}, <span className="text-primary-600 dark:text-primary-400">{displayName}</span>
                 </h1>
                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-                    Here's what's happening with your events today.
+                    Here&apos;s what&apos;s happening with your events today.
                 </p>
             </div>
             <div className="flex items-center gap-3">
