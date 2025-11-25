@@ -1074,8 +1074,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             {/* Registration Modal */}
             {
                 showRegistrationModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowRegistrationModal(false)}>
-                        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in" onClick={() => setShowRegistrationModal(false)}>
+                        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all scale-100" onClick={(e) => e.stopPropagation()}>
                             <div className="p-6">
                                 {/* Modal Header */}
                                 <div className="flex items-center justify-between mb-6">
@@ -1284,7 +1284,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                                             />
                                                             <label
                                                                 htmlFor={`file-${field.id}`}
-                                                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary transition-colors active:bg-gray-200 dark:active:bg-dark-800"
+                                                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-xl cursor-pointer bg-gray-50 dark:bg-dark-secondary hover:bg-gray-100 dark:hover:bg-dark-primary hover:border-primary-500 dark:hover:border-primary-500 transition-all duration-200 active:bg-gray-200 dark:active:bg-dark-800 group"
                                                             >
                                                                 <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
                                                                     {uploadingFiles[field.field_name] ? (
@@ -1358,8 +1358,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             {/* Cancel Registration Confirmation Modal */}
             {
                 showCancelConfirmation && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+                        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto transform transition-all scale-100">
                             <div className="p-6">
                                 <div className="text-center mb-6">
                                     <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1401,35 +1401,32 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             {/* Image Modal */}
             {
                 imageModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" onClick={() => setImageModal(null)}>
-                        <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in p-4" onClick={() => setImageModal(null)}>
+                        <div className="relative inline-block max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
                             {/* Close Button */}
                             <button
                                 onClick={() => setImageModal(null)}
-                                className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all duration-200"
+                                className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all duration-200 group"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
 
-                            {/* Image */}
-                            <div className="w-full max-h-[80vh] flex items-center justify-center">
-                                <Image
-                                    src={imageModal.src}
-                                    alt={imageModal.alt}
-                                    width={800}
-                                    height={600}
-                                    className="max-w-full max-h-full object-contain rounded-lg"
-                                    style={{ width: 'auto', height: 'auto' }}
-                                    sizes="(max-width: 768px) 90vw, (max-width: 1200px) 70vw, 60vw"
-                                />
-                            </div>
+                            {/* Image - Using standard img tag for auto-sizing */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={imageModal.src}
+                                alt={imageModal.alt}
+                                className="w-auto h-auto max-w-[95vw] max-h-[90vh] object-contain rounded-xl shadow-2xl"
+                            />
 
-                            {/* Image Caption */}
-                            <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-lg">
-                                <p className="text-sm font-medium">{imageModal.alt}</p>
-                            </div>
+                            {/* Caption */}
+                            {imageModal.alt && (
+                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full max-w-[90%] text-center pointer-events-none">
+                                    <p className="text-sm font-medium truncate">{imageModal.alt}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )
