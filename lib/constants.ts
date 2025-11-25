@@ -1,21 +1,30 @@
 export const CATEGORIES = [
     {
-        value: 'Tech',
-        label: 'Tech',
-        icon: '💻',
-        color: 'from-blue-500 to-cyan-500',
-        iconColor: 'text-blue-600 dark:text-blue-400',
-        iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-        path: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
+        value: 'DevOps',
+        label: 'DevOps',
+        icon: '♾️',
+        color: 'from-cyan-500 to-blue-500',
+        iconColor: 'text-cyan-600 dark:text-cyan-400',
+        iconBg: 'bg-cyan-100 dark:bg-cyan-900/30',
+        path: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1'
     },
     {
-        value: 'Food & Drink',
-        label: 'Food & Drink',
-        icon: '🍔',
-        color: 'from-orange-500 to-red-500',
-        iconColor: 'text-orange-600 dark:text-orange-400',
-        iconBg: 'bg-orange-100 dark:bg-orange-900/30',
-        path: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'
+        value: 'Cloud',
+        label: 'Cloud',
+        icon: '☁️',
+        color: 'from-sky-500 to-indigo-500',
+        iconColor: 'text-sky-600 dark:text-sky-400',
+        iconBg: 'bg-sky-100 dark:bg-sky-900/30',
+        path: 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z'
+    },
+    {
+        value: 'Programming',
+        label: 'Programming',
+        icon: '💻',
+        color: 'from-blue-500 to-indigo-600',
+        iconColor: 'text-blue-600 dark:text-blue-400',
+        iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+        path: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4'
     },
     {
         value: 'AI',
@@ -27,40 +36,31 @@ export const CATEGORIES = [
         path: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
     },
     {
-        value: 'Arts & Culture',
-        label: 'Arts & Culture',
-        icon: '🎨',
-        color: 'from-pink-500 to-rose-500',
-        iconColor: 'text-pink-600 dark:text-pink-400',
-        iconBg: 'bg-pink-100 dark:bg-pink-900/30',
-        path: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
-    },
-    {
-        value: 'Climate',
-        label: 'Climate',
-        icon: '🌱',
-        color: 'from-green-500 to-emerald-500',
-        iconColor: 'text-green-600 dark:text-green-400',
-        iconBg: 'bg-green-100 dark:bg-green-900/30',
-        path: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-    },
-    {
-        value: 'Fitness',
-        label: 'Fitness',
-        icon: '💪',
-        color: 'from-red-500 to-orange-500',
+        value: 'Security',
+        label: 'Security',
+        icon: '🛡️',
+        color: 'from-red-500 to-rose-600',
         iconColor: 'text-red-600 dark:text-red-400',
         iconBg: 'bg-red-100 dark:bg-red-900/30',
-        path: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
+        path: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
     },
     {
-        value: 'Wellness',
-        label: 'Wellness',
-        icon: '🧘',
-        color: 'from-teal-400 to-cyan-500',
-        iconColor: 'text-teal-600 dark:text-teal-400',
-        iconBg: 'bg-teal-100 dark:bg-teal-900/30',
-        path: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+        value: 'Open Source',
+        label: 'Open Source',
+        icon: '🐙',
+        color: 'from-slate-600 to-slate-800',
+        iconColor: 'text-slate-600 dark:text-slate-400',
+        iconBg: 'bg-slate-100 dark:bg-slate-800/50',
+        path: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4'
+    },
+    {
+        value: 'Data Science',
+        label: 'Data Science',
+        icon: '📊',
+        color: 'from-emerald-500 to-green-600',
+        iconColor: 'text-emerald-600 dark:text-emerald-400',
+        iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+        path: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
     },
     {
         value: 'Crypto',
@@ -88,15 +88,6 @@ export const CATEGORIES = [
         iconColor: 'text-indigo-600 dark:text-indigo-400',
         iconBg: 'bg-indigo-100 dark:bg-indigo-900/30',
         path: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
-    },
-    {
-        value: 'Music',
-        label: 'Music',
-        icon: '🎵',
-        color: 'from-fuchsia-500 to-pink-500',
-        iconColor: 'text-fuchsia-600 dark:text-fuchsia-400',
-        iconBg: 'bg-fuchsia-100 dark:bg-fuchsia-900/30',
-        path: 'M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
     },
     {
         value: 'Gaming',
