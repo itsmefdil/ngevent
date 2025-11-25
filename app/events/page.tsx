@@ -107,7 +107,6 @@ function EventsContent() {
                                     : 'bg-white dark:bg-dark-card text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                                     }`}
                             >
-                                <span>{category.icon}</span>
                                 {category.label}
                             </button>
                         ))}
