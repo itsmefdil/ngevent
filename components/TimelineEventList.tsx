@@ -21,8 +21,8 @@ type EventWithSpeakers = {
     created_at: string;
     profiles?: {
         full_name: string;
-        avatar_url: string;
-    };
+        avatar_url: string | null;
+    } | null;
     speakers: Array<{
         id: string;
         name: string;

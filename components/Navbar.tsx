@@ -63,12 +63,12 @@ export default function Navbar() {
             <div className="container mx-auto">
                 <div className="relative -mx-4 flex items-center justify-between">
                     <div className="w-60 max-w-full px-4">
-                        <Link href="/" className="flex items-center gap-2 w-full py-5">
+                        <Link href="/" className="flex items-center gap-2 w-full py-3">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={isDarkMode ? "/images/logo-dark.png" : "/images/logo.png"}
                                 alt="Ngevent Logo"
-                                className="h-10 w-25 object-contain transition-opacity duration-300"
+                                className="h-9 w-25 object-contain transition-opacity duration-300"
                                 onError={(e) => {
                                     // Fallback jika gambar tidak ada
                                     e.currentTarget.style.display = 'none';
@@ -78,22 +78,22 @@ export default function Navbar() {
                                     }
                                 }}
                             />
-                            <span className="text-2xl font-bold text-primary-600 dark:text-primary-400 hidden logo-fallback">Ngevent</span>
+                            <span className="text-xl font-bold text-primary-600 dark:text-primary-400 hidden logo-fallback">Ngevent</span>
                         </Link>
                     </div>
                     <div className="flex w-full items-center justify-between px-4">
                         <div className="hidden lg:block">
-                            <nav className="lg:static lg:block lg:w-full lg:max-w-full lg:bg-transparent dark:lg:bg-transparent lg:py-0 lg:px-4 lg:shadow-none xl:px-6">
+                            <nav className="lg:static  lg:block lg:w-full lg:max-w-full lg:bg-transparent dark:lg:bg-transparent lg:py-0 lg:px-4 lg:shadow-none xl:px-6">
                                 <ul className="lg:flex 2xl:ml-20">
                                     <li className="group relative">
                                         <Link
                                             href="/"
-                                            className={`mx-8 flex items-center gap-2 py-2 text-base font-medium lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 ${isActive('/')
+                                            className={`mx-8 flex  items-center gap-2 py-2 text-sm font-bold lg:mr-0 lg:inline-flex lg:px-0 lg:py-4 ${isActive('/')
                                                 ? 'text-primary-600 dark:text-primary-400'
                                                 : 'text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'
                                                 }`}
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                             </svg>
                                             {t('nav.home')}
@@ -102,12 +102,12 @@ export default function Navbar() {
                                     <li className="group relative">
                                         <Link
                                             href="/events"
-                                            className={`mx-8 flex items-center gap-2 py-2 text-base font-medium lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 xl:ml-10 ${isActive('/events') || pathname?.startsWith('/events/')
+                                            className={`mx-8 flex items-center gap-2 py-2 text-sm font-bold lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-4 xl:ml-10 ${isActive('/events') || pathname?.startsWith('/events/')
                                                 ? 'text-primary-600 dark:text-primary-400'
                                                 : 'text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'
                                                 }`}
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                             {t('nav.events')}
@@ -116,12 +116,12 @@ export default function Navbar() {
                                     <li className="group relative">
                                         <Link
                                             href="/calendar"
-                                            className={`mx-8 flex items-center gap-2 py-2 text-base font-medium lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 xl:ml-10 ${isActive('/calendar')
+                                            className={`mx-8 flex items-center gap-2 py-2 text-sm font-bold lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-4 xl:ml-10 ${isActive('/calendar')
                                                 ? 'text-primary-600 dark:text-primary-400'
                                                 : 'text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'
                                                 }`}
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                             {t('nav.calendar')}
@@ -130,12 +130,12 @@ export default function Navbar() {
                                     <li className="group relative">
                                         <Link
                                             href="/discover"
-                                            className={`mx-8 flex items-center gap-2 py-2 text-base font-medium lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 xl:ml-10 ${isActive('/discover')
+                                            className={`mx-8 flex items-center gap-2 py-2 text-sm font-bold lg:ml-7 lg:mr-0 lg:inline-flex lg:px-0 lg:py-4 xl:ml-10 ${isActive('/discover')
                                                 ? 'text-primary-600 dark:text-primary-400'
                                                 : 'text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'
                                                 }`}
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                             </svg>
                                             {t('nav.discover')}
@@ -157,14 +157,14 @@ export default function Navbar() {
 
                             {loading ? (
                                 // Loading skeleton
-                                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                                <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
                             ) : user ? (
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowDropdown(!showDropdown)}
                                         className="flex items-center gap-2 focus:outline-none"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 flex items-center justify-center text-white font-semibold overflow-hidden">
+                                        <div className="w-9 h-9 rounded-full bg-primary-600 dark:bg-primary-500 flex items-center justify-center text-white font-semibold overflow-hidden">
                                             {profile?.avatar_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img
@@ -173,7 +173,7 @@ export default function Navbar() {
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <span className="text-lg">
+                                                <span className="text-base">
                                                     {(profile?.full_name || user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase()}
                                                 </span>
                                             )}
@@ -270,7 +270,7 @@ export default function Navbar() {
                                 <>
                                     <Link
                                         href="/auth/login"
-                                        className="hidden lg:inline-block rounded-lg bg-primary-600 dark:bg-primary-500 px-7 py-3 text-base font-medium text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
+                                        className="hidden lg:inline-block rounded-lg bg-primary-600 dark:bg-primary-500 px-5 py-2 text-sm font-bold text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
                                     >
                                         {t('nav.login')}
                                     </Link>

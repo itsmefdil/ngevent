@@ -100,7 +100,7 @@ export default function BottomNav() {
                             <div className={`transition-transform duration-200 ${active ? 'scale-110' : ''}`}>
                                 {item.icon}
                             </div>
-                            <span className={`text-xs mt-1 font-medium ${active ? 'font-semibold' : ''}`}>
+                            <span className={`text-xs mt-1 font-bold`}>
                                 {item.label}
                             </span>
                             {active && (

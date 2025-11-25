@@ -10,7 +10,8 @@ import { useSearchParams } from 'next/navigation';
 import { CATEGORIES } from '@/lib/constants';
 import { useLanguage } from '@/lib/language-context';
 import { useEventsWithSpeakers } from '@/hooks/useSupabaseQuery';
-import { EventCardSkeletonGrid } from '@/components/EventCardSkeleton';
+import { EventCardSkeletonGrid, TimelineEventSkeletonList } from '@/components/EventCardSkeleton';
+import TimelineEventList from '@/components/TimelineEventList';
 
 type EventWithSpeakers = {
     id: string;
@@ -24,11 +25,18 @@ type EventWithSpeakers = {
     registration_fee: number;
     image_url: string;
     status: string;
+    organizer_id: string;
+    created_at: string;
     speakers: Array<{
         id: string;
         name: string;
         title: string;
+        company: string;
+        bio: string;
         photo_url: string;
+        linkedin_url: string;
+        twitter_url: string;
+        website_url: string;
         order_index: number;
     }>;
     profiles?: {
@@ -43,6 +51,7 @@ function EventsContent() {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState(() => searchParams.get('category') || 'all');
+    const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
 
     // Debounce search query
     useEffect(() => {
@@ -117,9 +126,51 @@ function EventsContent() {
                     </div>
                 </div>
 
-                {/* Events Grid */}
+                {/* View Toggle & Results Count */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div className="text-gray-600 dark:text-gray-400 font-medium">
+                        {!loading && (
+                            <>
+                                {filteredEvents.length} {filteredEvents.length === 1 ? t('events.eventFound') : t('events.eventsFound')}
+                            </>
+                        )}
+                    </div>
+
+                    <div className="flex self-end sm:self-auto bg-white dark:bg-dark-card p-1 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${viewMode === 'grid'
+                                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
+                                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                            title={t('common.gridView')}
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            <span className="hidden sm:inline">{t('common.grid')}</span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('timeline')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${viewMode === 'timeline'
+                                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
+                                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                            title={t('common.timelineView')}
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <span className="hidden sm:inline">{t('common.timeline')}</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Events Grid/Timeline */}
                 {loading ? (
-                    <EventCardSkeletonGrid count={9} />
+                    viewMode === 'grid' ? (
+                        <EventCardSkeletonGrid count={9} />
+                    ) : (
+                        <TimelineEventSkeletonList count={6} />
+                    )
                 ) : filteredEvents.length === 0 ? (
                     <div className="text-center py-16">
                         <div className="max-w-md mx-auto">
@@ -162,11 +213,19 @@ function EventsContent() {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                        {filteredEvents.map((event: EventWithSpeakers) => (
-                            <EventCard key={event.id} event={event} />
-                        ))}
-                    </div>
+                    viewMode === 'grid' ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                            {filteredEvents.map((event: EventWithSpeakers) => (
+                                <EventCard key={event.id} event={event} />
+                            ))}
+                        </div>
+                    ) : (
+                        <TimelineEventList
+                            events={filteredEvents}
+                            t={t}
+                            sortDirection="desc"
+                        />
+                    )
                 )}
             </div>
         </div>
@@ -216,10 +275,6 @@ function EventCard({ event }: { event: EventWithSpeakers }) {
 
                 {/* Content */}
                 <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                        {event.title}
-                    </h3>
-
                     {/* Date and Time Info */}
                     <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm mb-3">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,6 +285,10 @@ function EventCard({ event }: { event: EventWithSpeakers }) {
                             {event.end_date && ` - ${format(new Date(event.end_date), 'HH:mm', { locale: id })}`}
                         </span>
                     </div>
+
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                        {event.title}
+                    </h3>
 
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-3">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

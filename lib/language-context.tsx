@@ -122,6 +122,8 @@ const translations: Record<Language, Record<string, string>> = {
         'event.capacityReached': 'Kapasitas Penuh',
         'event.cancel': 'Batalkan Pendaftaran',
         'event.registrationForm': 'Formulir Pendaftaran',
+        'events.eventFound': 'event ditemukan',
+        'events.eventsFound': 'event ditemukan',
 
         // Common
         'common.loading': 'Memuat...',
@@ -136,6 +138,10 @@ const translations: Record<Language, Record<string, string>> = {
         'common.register': 'Daftar',
         'common.submit': 'Kirim',
         'common.close': 'Tutup',
+        'common.gridView': 'Tampilan Grid',
+        'common.grid': 'Grid',
+        'common.timelineView': 'Tampilan Timeline',
+        'common.timeline': 'Timeline',
 
         // Dashboard
         'dashboard.title': 'Dashboard',
@@ -542,6 +548,8 @@ const translations: Record<Language, Record<string, string>> = {
         'event.capacity': 'Event Capacity',
         'event.registrationClosed': 'Registration Closed',
         'event.capacityReached': 'Capacity Reached',
+        'events.eventFound': 'event found',
+        'events.eventsFound': 'events found',
 
         // Common
         'common.loading': 'Loading...',
@@ -556,6 +564,10 @@ const translations: Record<Language, Record<string, string>> = {
         'common.register': 'Register',
         'common.submit': 'Submit',
         'common.close': 'Close',
+        'common.gridView': 'Grid View',
+        'common.grid': 'Grid',
+        'common.timelineView': 'Timeline View',
+        'common.timeline': 'Timeline',
         'common.requestTimeout': 'Request Timeout',
         'common.loadFailed': 'Failed to Load Data',
         'common.serverTimeout': 'Server took too long. Please try refreshing the page.',
