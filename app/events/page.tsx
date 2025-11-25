@@ -31,6 +31,10 @@ type EventWithSpeakers = {
         photo_url: string;
         order_index: number;
     }>;
+    profiles?: {
+        full_name: string;
+        avatar_url: string | null;
+    } | null;
 };
 
 function EventsContent() {
@@ -216,12 +220,34 @@ function EventCard({ event }: { event: EventWithSpeakers }) {
                         {event.title}
                     </h3>
 
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-6">
+                    {/* Date and Time Info */}
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm mb-3">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="line-clamp-1">
+                            {format(new Date(event.start_date), 'dd MMM yyyy, HH:mm', { locale: id })}
+                            {event.end_date && ` - ${format(new Date(event.end_date), 'HH:mm', { locale: id })}`}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-3">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <span className="line-clamp-1">{event.location || t('common.onlineEvent')}</span>
+                    </div>
+
+                    {/* Organizer Info */}
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm mb-6">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="text-xs text-gray-500 dark:text-gray-500">{t('common.by')}</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                            {event.profiles?.full_name || 'Unknown'}
+                        </span>
                     </div>
 
                     <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
