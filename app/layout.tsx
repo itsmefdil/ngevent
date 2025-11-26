@@ -8,7 +8,6 @@ import { LanguageProvider } from "@/lib/language-context";
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
-import FloatingThemeToggle from "@/components/FloatingThemeToggle";
 import MobileLogo from "@/components/MobileLogo";
 import NavigationLoader from "@/components/NavigationLoader";
 import CacheInitializer from "@/components/CacheInitializer";
@@ -74,7 +73,6 @@ export default function RootLayout({
                                 </div>
                                 <Footer />
                                 <BottomNav />
-                                <FloatingThemeToggle />
                                 <Toaster
                                     position="top-right"
                                     toastOptions={{
