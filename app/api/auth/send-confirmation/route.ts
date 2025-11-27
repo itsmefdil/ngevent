@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
                 'Authorization': `Bearer ${resendKey}`
             },
             body: JSON.stringify({
-                from: 'Ngevent by DevOps Jogja <no-reply@notifications.devopsjogja.com>',
+                from: 'Ngevent by DevOps Jogja <ngevent@notifications.devopsjogja.com>',
                 to: email,
                 subject,
                 html,

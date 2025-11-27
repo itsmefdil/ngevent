@@ -17,13 +17,13 @@ export default function RoleSwitcher({ currentRole, onRoleChange, loading }: Rol
                     <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.roleSwitcher.subtitle')}</p>
                 </div>
 
-                <div className="flex p-1 bg-gray-100 dark:bg-dark-bg rounded-xl w-full sm:w-auto">
+                <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-full sm:w-auto">
                     <button
                         onClick={() => currentRole !== 'participant' && onRoleChange('participant')}
                         disabled={loading}
                         className={`flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${currentRole === 'participant'
-                            ? 'bg-white dark:bg-dark-card text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                            ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
                             }`}
                     >
                         {t('dashboard.role.participant')}
@@ -32,8 +32,8 @@ export default function RoleSwitcher({ currentRole, onRoleChange, loading }: Rol
                         onClick={() => currentRole !== 'organizer' && onRoleChange('organizer')}
                         disabled={loading}
                         className={`flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${currentRole === 'organizer'
-                            ? 'bg-white dark:bg-dark-card text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                            ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
                             }`}
                     >
                         {t('dashboard.role.organizer')}

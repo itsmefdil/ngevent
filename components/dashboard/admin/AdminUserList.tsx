@@ -3,6 +3,7 @@ import { Database } from '@/lib/database.types';
 import { Search, Shield, User, Trash2, MoreVertical } from 'lucide-react';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import DeleteUserModal from './DeleteUserModal';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -15,6 +16,30 @@ interface AdminUserListProps {
 export default function AdminUserList({ users, onUpdateRole, onDeleteUser }: AdminUserListProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState<'all' | 'participant' | 'organizer' | 'admin'>('all');
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteClick = (user: Profile) => {
+        setUserToDelete(user);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!userToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await onDeleteUser(userToDelete.id);
+            setDeleteModalOpen(false);
+            setUserToDelete(null);
+        } catch (error) {
+            console.error('Error deleting user:', error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
 
     const filteredUsers = users.filter(user => {
         const matchesSearch = (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -40,16 +65,23 @@ export default function AdminUserList({ users, onUpdateRole, onDeleteUser }: Adm
                         />
                     </div>
 
-                    <select
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value as any)}
-                        className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    >
-                        <option value="all">All Roles</option>
-                        <option value="participant">Participants</option>
-                        <option value="organizer">Organizers</option>
-                        <option value="admin">Admins</option>
-                    </select>
+                    <div className="relative">
+                        <select
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value as any)}
+                            className="appearance-none pl-4 pr-10 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer hover:border-gray-300 dark:hover:border-gray-500"
+                        >
+                            <option value="all" className="bg-white dark:bg-gray-800">All Roles</option>
+                            <option value="participant" className="bg-white dark:bg-gray-800">Participants</option>
+                            <option value="organizer" className="bg-white dark:bg-gray-800">Organizers</option>
+                            <option value="admin" className="bg-white dark:bg-gray-800">Admins</option>
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -107,17 +139,24 @@ export default function AdminUserList({ users, onUpdateRole, onDeleteUser }: Adm
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <select
-                                            value={user.role}
-                                            onChange={(e) => onUpdateRole(user.id, e.target.value as any)}
-                                            className="text-xs border-gray-200 dark:border-gray-600 rounded-md bg-transparent"
-                                        >
-                                            <option value="participant">Participant</option>
-                                            <option value="organizer">Organizer</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
+                                        <div className="relative group">
+                                            <select
+                                                value={user.role}
+                                                onChange={(e) => onUpdateRole(user.id, e.target.value as any)}
+                                                className="appearance-none pl-4 pr-9 py-2 text-xs font-semibold rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer shadow-sm min-w-[120px]"
+                                            >
+                                                <option value="participant" className="bg-white dark:bg-gray-800">Participant</option>
+                                                <option value="organizer" className="bg-white dark:bg-gray-800">Organizer</option>
+                                                <option value="admin" className="bg-white dark:bg-gray-800">Admin</option>
+                                            </select>
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-primary-500 transition-colors">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
+                                        </div>
                                         <button
-                                            onClick={() => onDeleteUser(user.id)}
+                                            onClick={() => handleDeleteClick(user)}
                                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                             title="Delete User"
                                         >
@@ -136,6 +175,14 @@ export default function AdminUserList({ users, onUpdateRole, onDeleteUser }: Adm
                     No users found matching your criteria.
                 </div>
             )}
+
+            <DeleteUserModal
+                isOpen={deleteModalOpen}
+                onClose={() => !isDeleting && setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                userName={userToDelete?.full_name || 'User'}
+                isDeleting={isDeleting}
+            />
         </div>
     );
 }

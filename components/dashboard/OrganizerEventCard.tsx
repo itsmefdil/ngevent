@@ -5,6 +5,7 @@ import { id } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import RegistrationsStat from './RegistrationsStat';
 import { useLanguage } from '@/lib/language-context';
+import BroadcastModal from './BroadcastModal';
 
 interface OrganizerEventCardProps {
     event: any;
@@ -15,6 +16,8 @@ const idr = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
 
 export default function OrganizerEventCard({ event, onDelete }: OrganizerEventCardProps) {
     const { t } = useLanguage();
+    const [broadcastModalOpen, setBroadcastModalOpen] = React.useState(false);
+
     const copyLink = () => {
         const url = `${window.location.origin}/events/${event.id}`;
         navigator.clipboard.writeText(url);
@@ -103,34 +106,65 @@ export default function OrganizerEventCard({ event, onDelete }: OrganizerEventCa
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-2">
-                        <Link
-                            href={`/events/${event.id}`}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all shadow-sm hover:shadow-md"
-                        >
-                            {t('common.viewDetails')}
-                        </Link>
-                        <Link
-                            href={`/dashboard/events/${event.id}/edit`}
-                            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                        >
-                            {t('common.edit')}
-                        </Link>
-                        <Link
-                            href={`/dashboard/events/${event.id}/registrations`}
-                            className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-all shadow-sm hover:shadow-md"
-                        >
-                            {t('dashboard.registrations')}
-                        </Link>
+                    <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href={`/events/${event.id}`}
+                                title={t('common.viewDetails')}
+                                className="p-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-all shadow-sm hover:shadow-md"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </Link>
+                            <Link
+                                href={`/dashboard/events/${event.id}/edit`}
+                                title={t('common.edit')}
+                                className="p-2 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all shadow-sm hover:shadow-md"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </Link>
+                            <Link
+                                href={`/dashboard/events/${event.id}/registrations`}
+                                title={t('dashboard.registrations')}
+                                className="p-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-lg transition-all shadow-sm hover:shadow-md"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </Link>
+
+                            <button
+                                onClick={() => setBroadcastModalOpen(true)}
+                                title="Broadcast Email"
+                                className="p-2 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 rounded-lg transition-all shadow-sm hover:shadow-md"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                                </svg>
+                            </button>
+                        </div>
                         <button
                             onClick={() => onDelete(event.id, event.title)}
-                            className="ml-auto px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-dark-card border border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all shadow-sm hover:shadow-md"
+                            title={t('common.delete')}
+                            className="p-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all shadow-sm hover:shadow-md"
                         >
-                            {t('common.delete')}
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+            <BroadcastModal
+                isOpen={broadcastModalOpen}
+                onClose={() => setBroadcastModalOpen(false)}
+                eventId={event.id}
+                eventTitle={event.title}
+            />
+        </div >
     );
 }

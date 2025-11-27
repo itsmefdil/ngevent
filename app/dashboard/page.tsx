@@ -10,7 +10,7 @@ import { useMyEvents, useMyRegistrations } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/lib/auth-context';
 import { useQueryClient } from '@tanstack/react-query';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
-import { invalidateRelatedCaches } from '@/lib/cache-helpers';
+
 import { useLanguage } from '@/lib/language-context';
 
 // Components
@@ -29,7 +29,7 @@ export default function DashboardPage() {
     const queryClient = useQueryClient();
     const { user, profile, loading: authLoading } = useAuth();
     const [effectiveRole, setEffectiveRole] = useState<'participant' | 'organizer'>(
-        profile?.role === 'admin' ? 'organizer' : (profile?.role as 'participant' | 'organizer') || 'participant'
+        (profile?.role === 'admin' || profile?.role === 'organizer') ? 'organizer' : 'participant'
     );
 
     // Delete Modal State
@@ -46,9 +46,12 @@ export default function DashboardPage() {
     // Keep effectiveRole in sync with profile changes
     useEffect(() => {
         if (profile?.role) {
-            setEffectiveRole(
-                profile.role === 'admin' ? 'organizer' : (profile.role as 'participant' | 'organizer')
-            );
+            // Default to organizer view if user has organizer/admin role
+            if (profile.role === 'admin' || profile.role === 'organizer') {
+                setEffectiveRole('organizer');
+            } else {
+                setEffectiveRole('participant');
+            }
         }
     }, [profile?.role]);
 
@@ -59,29 +62,13 @@ export default function DashboardPage() {
         }
     }, [authLoading, user, router, t]);
 
-    const updateRole = async (newRole: 'participant' | 'organizer') => {
+    const updateRole = (newRole: 'participant' | 'organizer') => {
         if (!user) return;
 
-        // If user is admin, only update local state (view), don't update DB
-        if (profile?.role === 'admin') {
+        // Only allow switching view if user has permission
+        if (profile?.role === 'admin' || profile?.role === 'organizer') {
             setEffectiveRole(newRole);
-            toast.success(t('dashboard.roleUpdated'));
-            return;
-        }
-
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ role: newRole })
-                .eq('id', user.id);
-
-            if (error) throw error;
-            // Immediately reflect role in UI and clear related caches
-            setEffectiveRole(newRole);
-            invalidateRelatedCaches('profile', user.id);
-            toast.success(t('dashboard.roleUpdated'));
-        } catch (error: any) {
-            toast.error(error.message);
+            // toast.success(t('dashboard.roleUpdated'));
         }
     };
 
@@ -149,10 +136,12 @@ export default function DashboardPage() {
                     thisMonthEvents={thisMonthEvents}
                 />
 
-                <RoleSwitcher
-                    currentRole={effectiveRole}
-                    onRoleChange={updateRole}
-                />
+                {(profile?.role === 'admin' || profile?.role === 'organizer') && (
+                    <RoleSwitcher
+                        currentRole={effectiveRole}
+                        onRoleChange={updateRole}
+                    />
+                )}
 
                 {effectiveRole === 'organizer' ? (
                     <OrganizerView

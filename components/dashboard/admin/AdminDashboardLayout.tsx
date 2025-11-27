@@ -68,7 +68,8 @@ export default function AdminDashboardLayout() {
     };
 
     const handleDeleteUser = async (userId: string) => {
-        if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+        // Confirmation is handled by the modal in AdminUserList
+
 
         try {
             // Delete from auth.users via server-side function would be ideal, 

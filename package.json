@@ -21,6 +21,7 @@
         "@supabase/supabase-js": "^2.45.4",
         "@tailwindcss/typography": "^0.5.19",
         "@tanstack/react-query": "^5.90.7",
+        "@upstash/qstash": "^2.8.4",
         "@upstash/ratelimit": "^1.2.0",
         "@upstash/redis": "^1.30.1",
         "@vercel/analytics": "^1.5.0",
