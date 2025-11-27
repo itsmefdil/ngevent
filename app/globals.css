@@ -10,7 +10,7 @@
 
   .dark {
     --foreground-rgb: 255, 255, 255;
-    --background-rgb: 15, 20, 25;
+    --background-rgb: 11, 17, 32;
   }
 
   html {
@@ -26,7 +26,7 @@
   .dark .bg-gray-50,
   .dark .dark\:bg-dark-primary,
   .dark .bg-dark-primary {
-    background: #0f172a !important;
+    background: #0B1120 !important;
   }
 }
 

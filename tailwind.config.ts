@@ -38,7 +38,7 @@ const config: Config = {
                 },
             },
             backgroundColor: {
-                'dark-primary': '#0f172a', // Slate 900
+                'dark-primary': '#0B1120', // Custom Dark Blue
                 'dark-secondary': '#334155', // Slate 700
                 'dark-card': '#1e293b', // Slate 800
             },
