@@ -113,14 +113,14 @@ export async function POST(
 
         // Merge registrations with profile and auth data
         const registrations = regs.map((reg: any) => {
-            const profile = profiles?.find((p: any) => p.id === reg.user_id) || {};
-            const authUser = authUsers?.find((u: any) => u.id === reg.user_id) || {};
+            const profile = profiles?.find((p: any) => p.id === reg.user_id);
+            const authUser = authUsers?.find((u: any) => u.id === reg.user_id);
 
             return {
                 ...reg,
                 profiles: {
-                    full_name: profile.full_name,
-                    email: authUser.email
+                    full_name: profile?.full_name,
+                    email: authUser?.email
                 }
             };
         });
