@@ -49,7 +49,14 @@ const broadcastSchema = z.object({
 export const validateSchema = (schema: z.ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log('Validating request body:', JSON.stringify(req.body, null, 2));
+      // Sanitize sensitive data from logs
+      const sanitizedBody = { ...req.body };
+      if (sanitizedBody.password) sanitizedBody.password = '***';
+      if (sanitizedBody.confirmPassword) sanitizedBody.confirmPassword = '***';
+      if (sanitizedBody.currentPassword) sanitizedBody.currentPassword = '***';
+      if (sanitizedBody.newPassword) sanitizedBody.newPassword = '***';
+
+      console.log('Validating request body:', JSON.stringify(sanitizedBody, null, 2));
       schema.parse(req.body);
       console.log('Validation passed!');
       next();

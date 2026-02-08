@@ -16,6 +16,7 @@ import RegisterPage from './pages/RegisterPage'
 import CreateEventPage from './pages/CreateEventPage'
 import EditEventPage from './pages/EditEventPage'
 import EditProfilePage from './pages/EditProfilePage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
         <Route path="profile/edit" element={<EditProfilePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="verify-email" element={<VerifyEmailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

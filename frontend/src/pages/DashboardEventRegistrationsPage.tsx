@@ -143,49 +143,6 @@ function downloadCSV(filename: string, rows: Record<string, any>[]) {
 }
 
 export default function DashboardEventRegistrationsPage() {
-    const { id } = useParams<{ id: string }>();
-    const { user, loading: authLoading } = useAuth();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const [searchQuery, setSearchQuery] = useState('');
-
-    // Fetch event data
-    const { data: event, isLoading: loadingEvent } = useQuery<Event>({
-        queryKey: ['event', id],
-        queryFn: async () => {
-            const response = await apiClient.get(`/api/events/${id}`);
-            return response.data;
-        },
-        enabled: !!id,
-    });
-
-    // Set document title based on event name
-    useEffect(() => {
-        if (event?.title) {
-            document.title = `Pendaftaran ${event.title} - NgEvent`
-        } else {
-            document.title = 'Kelola Pendaftaran Event - NgEvent'
-        }
-    }, [event?.title])
-
-    const escape = (value: any) => {
-        const text = value == null ? '' : String(value);
-        const needsQuotes = /[\n\r,\"]/g.test(text);
-        const escaped = text.replace(/\"/g, '""');
-        return needsQuotes ? `"${escaped}"` : escaped;
-    };
-
-    const csv = [headers.join(','), ...rows.map((r) => headers.map((h) => escape(r[h])).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-}
-
-export default function DashboardEventRegistrationsPage() {
     const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -218,6 +175,15 @@ export default function DashboardEventRegistrationsPage() {
         },
         enabled: !!eventId,
     });
+
+    // Set document title based on event name
+    useEffect(() => {
+        if (event?.title) {
+            document.title = `Pendaftaran ${event.title} - NgEvent`
+        } else {
+            document.title = 'Kelola Pendaftaran Event - NgEvent'
+        }
+    }, [event?.title])
 
     const { data: registrations = [], isLoading: regsLoading } = useQuery<Registration[]>({
         queryKey: ['event-registrations', eventId],
