@@ -301,8 +301,7 @@ export default function EditProfilePage() {
                         } ${!avatarPreview ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white'}`}
                     >
                       {avatarPreview ? (
-                        <CachedAvatar src={user?.avatar_url} alt={user?.full_name || 'Avatar'} className="w-full h-full object-cover" />
-                        // <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                        <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
                       ) : (
                         <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
