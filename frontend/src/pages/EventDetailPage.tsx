@@ -42,11 +42,6 @@ interface Event {
   }>
 }
 
-type CustomImage = {
-  title: string
-  description: string
-  url: string
-}
 
 type MyRegistration = {
   id: string
@@ -96,7 +91,6 @@ export default function EventDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [imageModal, setImageModal] = useState<{ src: string; alt: string } | null>(null)
-  const [customImages, setCustomImages] = useState<CustomImage[]>([])
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -127,21 +121,6 @@ export default function EventDetailPage() {
     if (!eventLocation) return null
     return `https://maps.google.com/maps?q=${encodeURIComponent(eventLocation)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
   }, [eventLocation])
-
-  useEffect(() => {
-    if (!id) return
-    try {
-      const raw = localStorage.getItem(`event_custom_images_${id}`)
-      if (!raw) {
-        setCustomImages([])
-        return
-      }
-      const parsed = JSON.parse(raw)
-      setCustomImages(Array.isArray(parsed) ? parsed : [])
-    } catch {
-      setCustomImages([])
-    }
-  }, [id])
 
   // Derived values - must be after all hooks but before early returns
   const maxParticipants = event?.capacity ?? event?.max_participants ?? 0

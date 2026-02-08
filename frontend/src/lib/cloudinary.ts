@@ -47,7 +47,6 @@ export async function uploadToCloudinary(
         const {
             signature,
             timestamp,
-            cloudName,
             apiKey,
             folder: cloudinaryFolder,
             publicId,

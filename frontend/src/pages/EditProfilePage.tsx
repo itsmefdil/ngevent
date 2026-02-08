@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '../lib/axios'
 import { uploadToCloudinary } from '../lib/cloudinary'
 import { useAuth } from '../contexts/AuthContext'
-import CachedAvatar from '../components/CachedAvatar'
 
 type Profile = {
   id: string
