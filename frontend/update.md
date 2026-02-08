@@ -1,5 +1,59 @@
 # Updates
 
+## 2026-02-09 (Fungsi Batalkan Pendaftaran Event dari Dashboard User)
+- **Pengguna dapat membatalkan pendaftaran event dari dashboard mereka**
+- Tombol cancel hanya muncul untuk registration dengan status 'registered'
+- Modal konfirmasi mencegah pembatalan tidak sengaja
+- Otomatis refresh list setelah pembatalan berhasil
+
+**Changes:**
+- [DashboardPage.tsx](src/pages/DashboardPage.tsx)
+  - Menambahkan state untuk cancel modal dan cancelling status
+  - Menambahkan fungsi `handleCancelRegistration()` untuk membuka modal
+  - Menambahkan fungsi `confirmCancelRegistration()` untuk proses pembatalan
+  - Menambahkan tombol "Batalkan" di card registration (hanya untuk status 'registered')
+  - Menambahkan modal konfirmasi untuk cancel registration
+  - Invalidate cache `my-registrations` dan `events` setelah cancel
+
+**User Flow:**
+1. User melihat daftar event yang diikuti di dashboard (sebagai peserta)
+2. Card registration menampilkan tombol "Batalkan" untuk status 'registered'
+3. User click tombol "Batalkan"
+4. Modal konfirmasi muncul dengan peringatan
+5. User konfirmasi pembatalan
+6. API call ke `DELETE /api/registrations/:id`
+7. Registration status diubah menjadi 'cancelled' di database
+8. List registration otomatis refresh
+9. User melihat notification "Pendaftaran berhasil dibatalkan"
+
+**Backend Endpoint:**
+- Route: `DELETE /api/registrations/:id`
+- Authentication: Required
+- Authorization: User hanya bisa cancel registrationnya sendiri
+- Action: Update status menjadi 'cancelled'
+- Response: Success message
+
+**Features:**
+- ✅ Tombol cancel hanya untuk status 'registered'
+- ✅ Modal konfirmasi mencegah accident cancel
+- ✅ Loading state saat proses cancelling
+- ✅ Error handling dengan user-friendly message
+- ✅ Auto-refresh list setelah cancel
+- ✅ User tidak bisa cancel registration orang lain
+- ✅ Dark mode support
+
+**Security:**
+- Backend validasi bahwa user_id di registration = req.user.id
+- Tidak bisa cancel registration event orang lain
+- Rate limiting protection di backend
+
+**UI/UX:**
+- Tombol "Batalkan" dengan red color scheme
+- Modal dengan warning message yang jelas
+- Loading state: "Membatalkan..." saat processing
+- Button disabled saat processing
+- Success alert setelah berhasil
+
 ## 2026-02-09 (Client-Side Image Upload with Cloudinary Signature)
 - **Migrated all image uploads to client-side with Cloudinary signature**
 - Images now upload directly from browser to Cloudinary

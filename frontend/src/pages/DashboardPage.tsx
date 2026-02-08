@@ -54,6 +54,9 @@ export default function DashboardPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<{ id: string; title: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [registrationToCancel, setRegistrationToCancel] = useState<{ id: string; eventTitle: string } | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     document.title = 'Dashboard - NgEvent'
@@ -195,6 +198,30 @@ export default function DashboardPage() {
       alert(error?.response?.data?.message || error?.message || 'Gagal menghapus event');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleCancelRegistration = (registrationId: string, eventTitle: string) => {
+    setRegistrationToCancel({ id: registrationId, eventTitle });
+    setCancelModalOpen(true);
+  };
+
+  const confirmCancelRegistration = async () => {
+    if (!registrationToCancel) return;
+    try {
+      setIsCancelling(true);
+      await apiClient.delete(`/api/registrations/${registrationToCancel.id}`);
+
+      await queryClient.invalidateQueries({ queryKey: ['my-registrations', user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['events'] });
+
+      setCancelModalOpen(false);
+      setRegistrationToCancel(null);
+      alert('Pendaftaran berhasil dibatalkan');
+    } catch (error: any) {
+      alert(error?.response?.data?.message || error?.message || 'Gagal membatalkan pendaftaran');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -568,6 +595,14 @@ export default function DashboardPage() {
                           >
                             Lihat Detail Event
                           </Link>
+                          {registrationStatus(r) === 'registered' && (
+                            <button
+                              onClick={() => handleCancelRegistration(r.id, registrationEventTitle(r))}
+                              className="inline-flex items-center justify-center px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-sm font-medium"
+                            >
+                              Batalkan
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -601,6 +636,34 @@ export default function DashboardPage() {
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isDeleting ? 'Menghapus...' : 'Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Registration Modal */}
+      {cancelModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Batalkan Pendaftaran</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Apakah kamu yakin ingin membatalkan pendaftaran untuk event <span className="font-semibold">{registrationToCancel?.eventTitle}</span>? Kamu mungkin perlu mendaftar ulang jika ingin mengikuti event ini.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCancelModalOpen(false)}
+                disabled={isCancelling}
+                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium"
+              >
+                Tidak
+              </button>
+              <button
+                onClick={confirmCancelRegistration}
+                disabled={isCancelling}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isCancelling ? 'Membatalkan...' : 'Ya, Batalkan'}
               </button>
             </div>
           </div>
