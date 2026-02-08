@@ -1,5 +1,71 @@
 # Updates
 
+## 2026-02-09 (Client-Side Image Upload with Cloudinary Signature)
+- **Migrated from server-side to client-side image uploads for better performance**
+- Backend generates secure signature, frontend uploads directly to Cloudinary
+- Eliminates backend as proxy, reducing serverless execution time
+- Improves upload speed and reduces bandwidth costs
+
+**Changes:**
+- [upload.controller.ts](src/controllers/upload.controller.ts)
+  - Added `getUploadSignature()` endpoint to generate Cloudinary upload signature
+  - Returns timestamp, signature, api_key, folder, and transformation settings
+  - Uses CLOUDINARY_API_SECRET to sign upload parameters
+  - Supports different folders: avatars, event-images, payment-proofs
+  - Includes transformation settings (max dimensions, quality, format)
+
+- [upload.routes.ts](src/routes/upload.routes.ts)
+  - Added GET `/api/upload/signature` endpoint
+  - Requires authentication via basicAuth middleware
+  - Returns signature data for secure client-side upload
+
+**Architecture Change:**
+```
+Before (Server-Side Upload):
+Client → Backend (multer) → Cloudinary → Backend → Client
+- File passes through backend
+- Uses serverless function execution time
+- Doubles bandwidth usage
+
+After (Client-Side Upload):
+Client → Backend (signature only) → Client → Cloudinary
+- File goes directly to Cloudinary
+- Backend only generates signature (~10ms)
+- Minimal serverless execution
+- Single bandwidth usage
+```
+
+**Security:**
+- Signature generated server-side with API secret
+- Timestamp prevents replay attacks
+- Folder restrictions enforced
+- Transformation limits prevent abuse
+- Same security as server-side upload
+
+**Benefits:**
+- ✅ **Performance**: Direct upload is faster than proxy
+- ✅ **Cost**: Reduces serverless execution time significantly
+- ✅ **Bandwidth**: Backend doesn't handle file transfer
+- ✅ **Scalability**: Cloudinary handles upload load
+- ✅ **Reliability**: One less hop in the chain
+- ✅ **UX**: Better progress feedback possible
+
+**API Response:**
+```json
+{
+  "timestamp": 1675872000,
+  "signature": "abc123...",
+  "api_key": "123456789",
+  "folder": "ngevent/avatars",
+  "transformation": "w_500,h_500,c_limit,q_auto,f_auto"
+}
+```
+
+**Backward Compatibility:**
+- Old `POST /api/upload` endpoint still available
+- Supports gradual migration
+- Can be removed in future version
+
 ## 2026-02-09 (Auto-delete Old Avatar from Cloudinary on Profile Update)
 - **Added automatic cleanup of old avatar images when user updates profile picture**
 - Prevents orphaned files in Cloudinary storage

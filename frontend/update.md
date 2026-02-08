@@ -1,5 +1,98 @@
 # Updates
 
+## 2026-02-09 (Client-Side Image Upload with Cloudinary Signature)
+- **Migrated all image uploads to client-side with Cloudinary signature**
+- Images now upload directly from browser to Cloudinary
+- Backend only provides secure upload signature
+- Significantly improves performance and reduces server load
+
+**New Utility:**
+- [cloudinary.ts](src/lib/cloudinary.ts)
+  - `uploadToCloudinary(file, folder)` - Main upload function
+  - Fetches signature from backend `/api/upload/signature`
+  - Validates file before upload
+  - Creates FormData with signature params
+  - Uploads directly to Cloudinary API
+  - Returns upload result with secure_url
+  - Comprehensive error handling
+  - TypeScript types for responses
+
+**Updated Pages:**
+
+1. **[EditProfilePage.tsx](src/pages/EditProfilePage.tsx)**
+   - Replaced multer/FormData upload with `uploadToCloudinary()`
+   - Uploads to `avatars` folder
+   - Shows upload progress state
+   - Instant avatar preview
+   - Error handling with user feedback
+
+2. **[CreateEventPage.tsx](src/pages/CreateEventPage.tsx)**
+   - Replaced server-side upload with `uploadToCloudinary()`
+   - Uploads to `event-images` folder
+   - Upload progress indicator
+   - Preview before submit
+   - Validates image before upload
+
+3. **[EditEventPage.tsx](src/pages/EditEventPage.tsx)**
+   - Migrated to client-side upload
+   - Uploads to `event-images` folder
+   - Only uploads if new image selected
+   - Preserves existing image if not changed
+   - Progress feedback during upload
+
+4. **[EventRegistrationPage.tsx](src/pages/EventRegistrationPage.tsx)**
+   - Migrated payment proof upload to client-side
+   - Uploads to `payment-proofs` folder
+   - Supports image and PDF files
+   - Shows upload progress per field
+   - Handles file previews (images) and indicators (PDFs)
+   - Error handling with user-friendly messages
+
+**Upload Flow:**
+```
+Old Flow:
+Browser → Select file → Send to backend → Backend uploads to Cloudinary → Return URL
+- Backend handles file (memory/disk)
+- Serverless function execution time
+- Double network transfer
+
+New Flow:
+Browser → Select file → Get signature from backend → Upload directly to Cloudinary
+- Backend only generates signature (~10ms)
+- Single network transfer
+- No serverless file handling
+```
+
+**Benefits:**
+- ✅ **Performance**: Faster uploads (direct to CDN)
+- ✅ **Cost**: Minimal serverless execution
+- ✅ **Bandwidth**: Backend doesn't handle files
+- ✅ **Scalability**: Cloudinary handles all upload traffic
+- ✅ **UX**: Better progress indication possible
+- ✅ **Reliability**: Fewer failure points
+
+**Security:**
+- Server-generated signatures prevent unauthorized uploads
+- Folder restrictions enforced
+- File type validation on client and Cloudinary
+- Transformation limits prevent abuse
+- Timestamp prevents signature replay
+
+**Configuration:**
+All uploads configured with:
+- Folder paths: `ngevent/{avatars|event-images|payment-proofs}`
+- Auto format optimization
+- Quality optimization
+- Max dimensions enforced
+- Allowed file types validated
+
+**Error Handling:**
+- Network errors caught and displayed
+- Invalid file types rejected
+- Upload failures show user-friendly messages
+- Cloudinary errors properly handled
+- Fallback messages for unexpected errors
+
 ## 2026-02-09 (Add Reset Password Pages)
 - **Implemented complete reset password flow in frontend**
 - Added ForgotPasswordPage for requesting password reset
