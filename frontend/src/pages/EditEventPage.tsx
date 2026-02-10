@@ -204,8 +204,8 @@ export default function EditEventPage() {
       // Show success message
       alert('Event updated successfully!');
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Redirect to dashboard organizer tab
+      navigate('/dashboard', { state: { tab: 'organizer' } });
     } catch (error: any) {
       console.error('Error updating event:', error);
       alert(error.response?.data?.message || 'Failed to update event');
