@@ -56,7 +56,7 @@ if (process.env.NODE_ENV !== 'production') {
         winston.format.json(),
       ),
     }),
-    
+
     // Combined log file
     new winston.transports.File({
       filename: path.join('logs', 'combined.log'),
